@@ -1,0 +1,7 @@
+name: PKD Plugin
+version: 1.0.0
+main: org.rph.pkd.PKDPlugin
+description: The plugin backing the parkour duels practice server
+author: _spqghett1
+
+depend: [ ProtocolLib ]

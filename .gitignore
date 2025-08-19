@@ -1,0 +1,9 @@
+.idea
+
+# Server
+server/*
+
+# Plugin
+pkd-plugin/.gradle
+pkd-plugin/.kotlin
+pkd-plugin/build/
