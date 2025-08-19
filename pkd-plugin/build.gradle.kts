@@ -10,6 +10,8 @@ repositories {
     mavenLocal()
     mavenCentral()
 
+    maven(url = "https://maven.enginehub.org/repo/")
+
     maven {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
@@ -21,8 +23,11 @@ dependencies {
 
     compileOnly("org.github.paperspigot:paperspigot-api:1.8.8-R0.1-20160806.221350-1")
     compileOnly("net.dmulloy2:ProtocolLib:5.1.0")
+    compileOnly("com.sk89q.worldedit:worldedit-bukkit:6.1") {
+        exclude(group = "org.bukkit", module = "bukkit")
+    }
 
-    implementation("org.rph:pkd-core-v2:1.0.2")
+    implementation("org.rph:pkd-core-v2:1.1.1")
 
     implementation(kotlin("stdlib"))
 }
