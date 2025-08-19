@@ -7,6 +7,7 @@ group = "org.rph"
 version = "1.0.0"
 
 repositories {
+    mavenLocal()
     mavenCentral()
 
     maven {
@@ -20,6 +21,8 @@ dependencies {
 
     compileOnly("org.github.paperspigot:paperspigot-api:1.8.8-R0.1-20160806.221350-1")
     compileOnly("net.dmulloy2:ProtocolLib:5.1.0")
+
+    implementation("org.rph:pkd-core-v2:1.0.2")
 
     implementation(kotlin("stdlib"))
 }
