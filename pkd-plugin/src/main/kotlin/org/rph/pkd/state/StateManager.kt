@@ -6,43 +6,46 @@ import org.bukkit.Location
 import org.bukkit.WorldCreator
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
+import org.rph.core.inventory.hotbar.HotbarAPI
 import org.rph.pkd.worlds.RoomsWorld
 
-object StateManager {
+class StateManager(
+    private val plugin: JavaPlugin,
+    private val player: Player
+){
 
-    enum class Mode { LOBBY, ROOMS, RUN }
+    enum class Mode { LOBBY, ROOMS, RUN, NONE }
 
-    lateinit var plugin: JavaPlugin
+    private var currentMode: Mode = Mode.NONE
 
-    fun modeOf(p: Player): Mode =
-        when {
-            p.world.name == "world_rooms" -> Mode.ROOMS
-            p.world.name.startsWith("pkd_run_") -> Mode.RUN
-            else -> Mode.LOBBY
-        }
-
-    fun tpToLobby(p: Player) {
+    fun tpToLobby() {
         onMainThread {
             val world = Bukkit.createWorld(WorldCreator("world_lobby"))
                 ?: error("Lobby world not found or could not be created")
             val spawn = Location(world, 0.5, 65.0, 0.5)
-            p.gameMode = GameMode.ADVENTURE
-            p.teleport(spawn)
+            player.gameMode = GameMode.ADVENTURE
+            player.teleport(spawn)
+
+            HotbarAPI.applyLayout(player, "lobbyLayout")
+
+            currentMode = Mode.LOBBY
         }
     }
 
-    fun tpToRoom(p: Player, roomName: String) {
+    fun tpToRoom(roomName: String) {
         onMainThread {
             val spawn = RoomsWorld.getSpawnLocation(roomName)
                 ?: error("Unknown room: $roomName")
-            p.gameMode = GameMode.ADVENTURE
-            p.teleport(spawn)
+            player.gameMode = GameMode.ADVENTURE
+            player.teleport(spawn)
+
+            HotbarAPI.applyLayout(player, "roomsLayout")
+
+            currentMode = Mode.ROOMS
         }
     }
 
     private fun onMainThread(action: () -> Unit) {
-        if (!::plugin.isInitialized) error("StateManager not initialized with plugin instance")
-
         if (Bukkit.isPrimaryThread()) {
             action()
         } else {

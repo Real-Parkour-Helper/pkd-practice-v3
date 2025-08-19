@@ -5,3 +5,21 @@ description: The plugin backing the parkour duels practice server
 author: _spqghett1
 
 depend: [ ProtocolLib, WorldEdit ]
+
+commands:
+  rooms:
+    description: Switch to the individual rooms world and an optional room
+    usage: /rooms
+    aliases: [ rooms, room, r, il ]
+  prev:
+    description: Switch to the previous room
+    usage: /prev
+    aliases: [ prev, p ]
+  next:
+    description: Switch to the next room
+    usage: /next
+    aliases: [ next, n ]
+  lobby:
+    description: Switch to the lobby world
+    usage: /lobby
+    aliases: [ lobby, l ]

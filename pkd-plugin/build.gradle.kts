@@ -12,6 +12,8 @@ repositories {
 
     maven(url = "https://maven.enginehub.org/repo/")
 
+    maven { url = uri("https://jitpack.io") }
+
     maven {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
@@ -27,7 +29,8 @@ dependencies {
         exclude(group = "org.bukkit", module = "bukkit")
     }
 
-    implementation("org.rph:pkd-core-v2:1.1.1")
+    implementation("org.rph:pkd-core-v2:1.2.1")
+    implementation("com.samjakob:SpiGUI:v1.4.1")
 
     implementation(kotlin("stdlib"))
 }

@@ -1,24 +1,32 @@
 package org.rph.pkd
 
+import com.samjakob.spigui.SpiGUI
+import com.samjakob.spigui.buttons.SGButton
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Material
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityDamageEvent
+import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
 import org.rph.core.data.PkdData
 import org.rph.core.inventory.ItemBuilder
 import org.rph.core.inventory.hotbar.HotbarAPI
 import org.rph.pkd.state.StateManager
 import org.rph.pkd.worlds.RoomsWorld
+import java.util.*
 
 class PKDPlugin : JavaPlugin(), Listener {
 
+    private val stateManagers = mutableMapOf<UUID, StateManager>()
+    private lateinit var spiGUI: SpiGUI
+
     override fun onEnable() {
         println("PKDPlugin is enabled!")
-
-        StateManager.plugin = this
 
         Bukkit.getPluginManager().registerEvents(this, this)
         HotbarAPI.register(this)
@@ -38,32 +46,176 @@ class PKDPlugin : JavaPlugin(), Listener {
         println("PKD data source: ${PkdData.where()}")
 
         RoomsWorld.init()
+
+        spiGUI = SpiGUI(this)
     }
 
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
         val player = event.player
-        StateManager.tpToLobby(player)
-        HotbarAPI.applyLayout(player, "lobbyLayout")
+
+        stateManagers[player.uniqueId] = StateManager(this, player)
+        stateManagers[player.uniqueId]!!.tpToLobby()
         event.joinMessage = ""
+    }
+
+    @EventHandler
+    fun onQuit(event: PlayerQuitEvent) {
+        val player = event.player
+        stateManagers.remove(player.uniqueId)
+        event.quitMessage = ""
+    }
+
+    @EventHandler
+    fun onFallDamage(event: EntityDamageEvent) {
+        if (event.cause == EntityDamageEvent.DamageCause.FALL) {
+            event.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun onFoodLevelChange(event: FoodLevelChangeEvent) {
+        if (event.entity is Player) {
+            event.isCancelled = true
+        }
     }
 
     private fun registerLayouts() {
         HotbarAPI.registerLayout("lobbyLayout") {
-            slot(4) {
+            slot(3) {
                 state(0) {
-                    item = ItemBuilder(Material.FEATHER)
-                        .name("${ChatColor.GREEN}Select Mode")
-                        .lore("${ChatColor.GRAY}Click to select a practice mode.")
+                    item = ItemBuilder(Material.STAINED_CLAY)
+                        .name("${ChatColor.GREEN}Rooms Practice")
+                        .lore("${ChatColor.GRAY}Practice individual rooms.")
+                        .durability(3)
+                        .build()
+
+                    onClick = { player ->
+                        val menu = spiGUI.create("Select a Map", 1)
+
+                        PkdData.maps().forEachIndexed { idx, map ->
+                            if (map == "All") return@forEachIndexed
+
+                            val subMenu = spiGUI.create("Select a Room", 5)
+
+                            PkdData.rooms(map).forEach { room ->
+                                val r = room.replaceFirst("${map}_", "").replace("_", " ")
+                                val roomItem = ItemBuilder(Material.STAINED_CLAY)
+                                    .name("${ChatColor.GREEN}${r.upperCaseWords()}")
+                                    .lore("${ChatColor.GRAY}Click to go to ${r.upperCaseWords()}.")
+                                    .durability(idx.toShort())
+                                    .build()
+
+                                val roomButton = SGButton(roomItem).withListener {
+                                    stateManagers[player.uniqueId]?.tpToRoom(room)
+                                }
+
+                                subMenu.addButton(roomButton)
+                            }
+
+                            val item = ItemBuilder(Material.STAINED_CLAY)
+                                .name("${ChatColor.GREEN}${map.upperCaseWords()}")
+                                .lore("${ChatColor.GRAY}Click to select a room from this map.")
+                                .durability(idx.toShort())
+                                .build()
+
+                            val button = SGButton(item).withListener { event ->
+                                player.openInventory(subMenu.inventory)
+                            }
+
+                            menu.addButton(button)
+                        }
+
+                        player.openInventory(menu.inventory)
+                    }
+                }
+            }
+            slot(5) {
+                state(0) {
+                    item = ItemBuilder(Material.STAINED_CLAY)
+                        .name("${ChatColor.GREEN}Run Practice")
+                        .lore("${ChatColor.GRAY}Practice complete runs.")
+                        .durability(10)
                         .build()
 
                     onClick = { player ->
                         // ...
-                        StateManager.tpToRoom(player, "castle_around_pillars")
+                    }
+                }
+            }
+        }
+        HotbarAPI.registerLayout("roomsLayout") {
+            slot(0) {
+                state(0) {
+                    item = ItemBuilder(Material.FEATHER)
+                        .name("${ChatColor.GREEN}Boost Forward!")
+                        .lore(
+                            "${ChatColor.GRAY}Propel yourself forwards in the air like a bird!",
+                            "${ChatColor.GRAY}(1 Minute Cooldown)"
+                        )
+                        .build()
+
+                    onClick = { player ->
+                        // ...
+                    }
+                }
+                state(1) {
+                    item = ItemBuilder(Material.GHAST_TEAR)
+                        .name("${ChatColor.RED}Boost Forward!")
+                        .lore(
+                            "${ChatColor.GRAY}Propel yourself forwards in the air like a bird!",
+                            "${ChatColor.GRAY}(1 Minute Cooldown)"
+                        )
+                        .build()
+
+                    onClick = { player ->
+                        // ...
+                    }
+                }
+            }
+            slot(4) {
+                state(0) {
+                    item = ItemBuilder(Material.GOLD_PLATE)
+                        .name("${ChatColor.GREEN}Last Checkpoint")
+                        .lore("${ChatColor.GRAY}Teleport to your last checkpoint.")
+                        .build()
+
+                    onClick = { player ->
+                        // ...
+                    }
+                }
+            }
+            slot(7) {
+                state(0) {
+                    item = ItemBuilder(Material.REDSTONE)
+                        .name("${ChatColor.RED}Reset Room")
+                        .lore("${ChatColor.GRAY}Reset to the start of the room.")
+                        .build()
+
+                    onClick = { player ->
+                        // ...
+                    }
+                }
+            }
+            slot(8) {
+                state(0) {
+                    item = ItemBuilder(Material.BED)
+                        .name("${ChatColor.RED}Leave Room")
+                        .lore("${ChatColor.GRAY}Return to the lobby.")
+                        .build()
+
+                    onClick = { player ->
+                        stateManagers[player.uniqueId]?.tpToLobby()
                     }
                 }
             }
         }
     }
 
+    fun getStateManager(player: Player): StateManager? {
+        return stateManagers[player.uniqueId]
+    }
+
+    fun String.upperCaseWords() =
+        this.split(" ").joinToString(" ") { it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
 }

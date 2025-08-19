@@ -5,7 +5,6 @@ import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.WorldCreator
-import org.bukkit.plugin.java.JavaPlugin
 import org.rph.core.data.PkdData
 import org.rph.pkd.utils.Schematics
 import org.rph.pkd.utils.VoidWorldGenerator
