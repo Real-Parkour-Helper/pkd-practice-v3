@@ -238,7 +238,7 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        // ...
+                        getStateManager(player)?.tpToPrevRoom()
                     }
                 }
             }
@@ -264,7 +264,7 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        // ...
+                        getStateManager(player)?.tpToNextRoom()
                     }
                 }
             }

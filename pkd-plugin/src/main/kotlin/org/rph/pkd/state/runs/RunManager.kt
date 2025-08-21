@@ -48,6 +48,8 @@ abstract class RunManager(protected val run: Run) {
         // TODO
     }
 
+    fun currentRun() = run
+
     private fun tick() {
         if (tickTimerDelayTicks < run.timerDelay) {
             tickTimerDelayTicks++

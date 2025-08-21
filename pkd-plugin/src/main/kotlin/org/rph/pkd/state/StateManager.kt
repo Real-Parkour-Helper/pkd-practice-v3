@@ -52,6 +52,10 @@ class StateManager(
 
     fun tpToRoom(roomName: String) {
         onMainThread {
+            if (currentRunManager != null) {
+                currentRunManager!!.stop()
+            }
+
             val spawn = RoomsWorld.getSpawnLocation(roomName)
                 ?: error("Unknown room: $roomName")
             val corner = RoomsWorld.getRoomCorner(roomName)
@@ -78,6 +82,24 @@ class StateManager(
             currentRunManager = RoomRunManager(run)
             currentRunManager!!.start()
         }
+    }
+
+    fun tpToNextRoom() {
+        if (currentMode != Mode.ROOMS || currentRunManager == null) return
+        if (currentRunManager !is RoomRunManager) return
+
+        val currentRoom = currentRunManager!!.currentRun().rooms[0]
+        val nextRoom = RoomsWorld.nextRoom(currentRoom) ?: return
+        tpToRoom(nextRoom)
+    }
+
+    fun tpToPrevRoom() {
+        if (currentMode != Mode.ROOMS || currentRunManager == null) return
+        if (currentRunManager !is RoomRunManager) return
+
+        val currentRoom = currentRunManager!!.currentRun().rooms[0]
+        val prevRoom = RoomsWorld.previousRoom(currentRoom) ?: return
+        tpToRoom(prevRoom)
     }
 
     fun getRunManager(): RunManager? {
