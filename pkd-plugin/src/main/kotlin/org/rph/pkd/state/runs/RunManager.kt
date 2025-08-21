@@ -29,6 +29,7 @@ abstract class RunManager(protected val run: Run) {
         if (tickTask == null) return
         tickTimer.stop()
         tickTimer.reset()
+        checkpointTracker?.resetTickCounter()
         Bukkit.getScheduler().cancelTask(tickTask!!)
     }
 
@@ -36,6 +37,8 @@ abstract class RunManager(protected val run: Run) {
         if (checkpointTracker == null) return
 
         checkpointTracker!!.resetToCheckpoint(run.player)
+        PkdSounds.playResetSound(run.player)
+
         if (checkpointTracker!!.getCheckpoint(run.player) == 0) {
             tickTimer.reset()
         }
@@ -46,8 +49,6 @@ abstract class RunManager(protected val run: Run) {
     }
 
     private fun tick() {
-        checkpointTracker?.tick()
-
         if (tickTimerDelayTicks < run.timerDelay) {
             tickTimerDelayTicks++
         } else {
@@ -57,9 +58,10 @@ abstract class RunManager(protected val run: Run) {
             run.player.sendActionBar("§b§l$elapsedTime")
         }
 
+        checkpointTracker?.tick()
+
         if (checkDeathPlane()) {
             resetToCheckpoint()
-            PkdSounds.playResetSound(run.player)
         }
     }
 
@@ -74,11 +76,15 @@ abstract class RunManager(protected val run: Run) {
 
         if (currentRoom == null) return false
 
-        return run.player.location.y <= (currentRoom.second + 4)
+        return run.player.location.y <= (currentRoom.second + 3)
     }
 
     protected fun getElapsedTime(): String {
         return tickTimer.getElapsedTimeString()
+    }
+
+    protected fun stopTickTimer() {
+        tickTimer.stop()
     }
 
     /** This can be used to edit checkpoints e.g. after pre-game lobby waiting */

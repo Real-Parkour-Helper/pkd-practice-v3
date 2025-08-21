@@ -15,7 +15,12 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
 import org.rph.core.data.PkdData
 import org.rph.core.inventory.ItemBuilder
+import org.rph.core.inventory.SkullItemBuilder
 import org.rph.core.inventory.hotbar.HotbarAPI
+import org.rph.pkd.skulls.letterSkullMap
+import org.rph.pkd.skulls.nextTexture
+import org.rph.pkd.skulls.prevTexture
+import org.rph.pkd.skulls.restartTexture
 import org.rph.pkd.state.StateManager
 import org.rph.pkd.worlds.RoomsWorld
 import java.util.*
@@ -99,8 +104,10 @@ class PKDPlugin : JavaPlugin(), Listener {
                             val subMenu = spiGUI.create("Select a Room", 5)
 
                             PkdData.rooms(map).forEach { room ->
+                                if ("start" in room.lowercase() || "end" in room.lowercase() || "pregame" in room.lowercase()) return@forEach
+
                                 val r = room.replaceFirst("${map}_", "").replace("_", " ")
-                                val roomItem = ItemBuilder(Material.STAINED_CLAY)
+                                val roomItem = ItemBuilder(Material.STAINED_GLASS)
                                     .name("${ChatColor.GREEN}${r.upperCaseWords()}")
                                     .lore("${ChatColor.GRAY}Click to go to ${r.upperCaseWords()}.")
                                     .durability(idx.toShort())
@@ -113,11 +120,21 @@ class PKDPlugin : JavaPlugin(), Listener {
                                 subMenu.addButton(roomButton)
                             }
 
-                            val item = ItemBuilder(Material.STAINED_CLAY)
-                                .name("${ChatColor.GREEN}${map.upperCaseWords()}")
-                                .lore("${ChatColor.GRAY}Click to select a room from this map.")
-                                .durability(idx.toShort())
-                                .build()
+                            val firstLetter = map[0].lowercase()
+                            val letterSkullTexture = letterSkullMap[firstLetter]
+                            val item = if (letterSkullTexture != null) {
+                                SkullItemBuilder()
+                                    .name("${ChatColor.GREEN}${map.upperCaseWords()}")
+                                    .lore("${ChatColor.GRAY}Click to select a room from this map.")
+                                    .textureBase64(letterSkullTexture)
+                                    .build()
+                            } else {
+                                ItemBuilder(Material.STAINED_CLAY)
+                                    .name("${ChatColor.GREEN}${map.upperCaseWords()}")
+                                    .lore("${ChatColor.GRAY}Click to select a room from this map.")
+                                    .durability(idx.toShort())
+                                    .build()
+                            }
 
                             val button = SGButton(item).withListener { event ->
                                 player.openInventory(subMenu.inventory)
@@ -206,6 +223,47 @@ class PKDPlugin : JavaPlugin(), Listener {
 
                     onClick = { player ->
                         stateManagers[player.uniqueId]?.tpToLobby()
+                    }
+                }
+            }
+        }
+        HotbarAPI.registerLayout("roomRunOverLayout") {
+            slot(3) {
+                state(0) {
+                    item = SkullItemBuilder()
+                        .name("${ChatColor.GREEN}Previous Room")
+                        .lore("${ChatColor.GRAY}Switch to the previous room.")
+                        .textureBase64(prevTexture)
+                        .build()
+
+                    onClick = { player ->
+                        // ...
+                    }
+                }
+            }
+            slot(4) {
+                state(0) {
+                    item = SkullItemBuilder()
+                        .name("${ChatColor.GREEN}Re-do Run")
+                        .lore("${ChatColor.GRAY}Re-run this run.")
+                        .textureBase64(restartTexture)
+                        .build()
+
+                    onClick = { player ->
+                        getStateManager(player)?.getRunManager()?.resetRun()
+                    }
+                }
+            }
+            slot(5) {
+                state(0) {
+                    item = SkullItemBuilder()
+                        .name("${ChatColor.GREEN}Next Room")
+                        .lore("${ChatColor.GRAY}Switch to the next room.")
+                        .textureBase64(nextTexture)
+                        .build()
+
+                    onClick = { player ->
+                        // ...
                     }
                 }
             }

@@ -20,10 +20,12 @@ class RoomRunManager(run: Run) : RunManager(run) {
     }
 
     override fun onFinished() {
+        stopTickTimer()
         val time = getElapsedTime()
         val room = run.rooms[0]
         run.player.sendMessage("§e§lCOMPLETED!§r §aYou §acompleted $room in §6§l$time!")
         PkdSounds.playCheckpointSound(run.player)
+        HotbarAPI.applyLayout(run.player, "roomRunOverLayout")
     }
 
     override fun resetRun() {
