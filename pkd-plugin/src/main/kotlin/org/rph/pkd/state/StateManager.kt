@@ -13,6 +13,7 @@ import org.rph.pkd.state.runs.RoomRunManager
 import org.rph.pkd.state.runs.Run
 import org.rph.pkd.state.runs.RunManager
 import org.rph.pkd.worlds.RoomsWorld
+import org.rph.pkd.worlds.RunWorld
 
 class StateManager(
     private val plugin: JavaPlugin,
@@ -99,6 +100,18 @@ class StateManager(
 
     fun getRunManager(): RunManager? {
         return currentRunManager
+    }
+
+    fun tpToRun(rooms: List<String>) {
+        println("Teleporting to run.")
+        RunWorld.createRunWorld(plugin, rooms) { run ->
+            println("Room Corners: ")
+            run.roomPositions.forEach { println(it) }
+            println("Checkpoints: ")
+            run.checkpoints.forEach { println(it) }
+            player.teleport(run.checkpoints[0])
+        }
+
     }
 
     private fun ensureBasics(world: World) {

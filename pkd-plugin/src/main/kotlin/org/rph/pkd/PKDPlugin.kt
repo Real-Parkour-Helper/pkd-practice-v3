@@ -169,7 +169,15 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        // ...
+                        getStateManager(player)?.tpToRun(listOf(
+                            "atlantis_pregame",
+                            "castle_start",
+                            "atlantis_1a",
+                            "castle_fortress",
+                            "atlantis_5c",
+                            "atlantis_1d",
+                            "castle_end"
+                        ))
                     }
                 }
             }
