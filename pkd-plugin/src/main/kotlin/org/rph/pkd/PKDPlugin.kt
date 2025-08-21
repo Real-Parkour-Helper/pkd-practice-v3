@@ -22,6 +22,7 @@ import org.rph.pkd.skulls.nextTexture
 import org.rph.pkd.skulls.prevTexture
 import org.rph.pkd.skulls.restartTexture
 import org.rph.pkd.state.StateManager
+import org.rph.pkd.utils.extensions.upperCaseWords
 import org.rph.pkd.worlds.RoomsWorld
 import java.util.*
 
@@ -244,7 +245,7 @@ class PKDPlugin : JavaPlugin(), Listener {
             slot(4) {
                 state(0) {
                     item = SkullItemBuilder()
-                        .name("${ChatColor.GREEN}Re-do Run")
+                        .name("${ChatColor.GREEN}Redo Run")
                         .lore("${ChatColor.GRAY}Re-run this run.")
                         .textureBase64(restartTexture)
                         .build()
@@ -267,14 +268,22 @@ class PKDPlugin : JavaPlugin(), Listener {
                     }
                 }
             }
+            slot(8) {
+                state(0) {
+                    item = ItemBuilder(Material.BED)
+                        .name("${ChatColor.RED}Leave Room")
+                        .lore("${ChatColor.GRAY}Return to the lobby.")
+                        .build()
+
+                    onClick = { player ->
+                        stateManagers[player.uniqueId]?.tpToLobby()
+                    }
+                }
+            }
         }
     }
 
     fun getStateManager(player: Player): StateManager? {
         return stateManagers[player.uniqueId]
     }
-
-    fun String.upperCaseWords() =
-        this.split(" ")
-            .joinToString(" ") { it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
 }

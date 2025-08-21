@@ -58,7 +58,8 @@ class StateManager(
                 ?: error("Unable to get room corner for $roomName")
             val checkpoints = RoomsWorld.getCheckpoints(roomName)
                 ?: error("Unable to get checkpoints for $roomName")
-
+            val asset = PkdData.get(roomName)
+                ?: error("Unable to get room asset for $roomName")
 
             player.gameMode = GameMode.ADVENTURE
             currentMode = Mode.ROOMS
@@ -70,7 +71,7 @@ class StateManager(
                 plugin = plugin,
                 player = player,
                 rooms = listOf(roomName),
-                roomPositions = listOf(Pair(corner.z.toInt(), corner.y.toInt())),
+                roomPositions = listOf(Triple(corner.z.toInt(), corner.y.toInt(), asset.meta!!.deathPlane ?: 2)),
                 checkpoints = cp
             )
 

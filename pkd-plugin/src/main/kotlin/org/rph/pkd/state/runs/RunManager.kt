@@ -68,7 +68,7 @@ abstract class RunManager(protected val run: Run) {
     private fun checkDeathPlane(): Boolean {
         val zPos = run.player.location.z
 
-        var currentRoom: Pair<Int, Int>? = null
+        var currentRoom: Triple<Int, Int, Int>? = null
         for (roomPos in run.roomPositions) {
             if (zPos >= roomPos.first) currentRoom = roomPos
             else break
@@ -76,7 +76,7 @@ abstract class RunManager(protected val run: Run) {
 
         if (currentRoom == null) return false
 
-        return run.player.location.y <= (currentRoom.second + 3)
+        return run.player.location.y <= (currentRoom.second + currentRoom.third)
     }
 
     protected fun getElapsedTime(): String {
