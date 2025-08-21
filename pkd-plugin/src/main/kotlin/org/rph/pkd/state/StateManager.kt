@@ -41,7 +41,7 @@ class StateManager(
             world.time = 6000L
 
             val spawn = Location(world, 0.5, 65.0, 0.5)
-            player.gameMode = GameMode.ADVENTURE
+            ensureBasics()
             player.teleport(spawn)
 
             HotbarAPI.applyLayout(player, "lobbyLayout")
@@ -65,7 +65,7 @@ class StateManager(
             val asset = PkdData.get(roomName)
                 ?: error("Unable to get room asset for $roomName")
 
-            player.gameMode = GameMode.ADVENTURE
+            ensureBasics()
             currentMode = Mode.ROOMS
 
             val cp = mutableListOf(spawn)
@@ -104,6 +104,12 @@ class StateManager(
 
     fun getRunManager(): RunManager? {
         return currentRunManager
+    }
+
+    private fun ensureBasics() {
+        player.gameMode = GameMode.ADVENTURE
+        player.exp = 0F
+        player.level = 0
     }
 
     private fun onMainThread(action: () -> Unit) {

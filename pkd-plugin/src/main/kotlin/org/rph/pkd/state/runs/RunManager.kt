@@ -1,6 +1,7 @@
 package org.rph.pkd.state.runs
 
 import org.bukkit.Bukkit
+import org.rph.core.boost.BoostManager
 import org.rph.core.checkpoints.CheckpointTracker
 import org.rph.core.checkpoints.TickTimer
 import org.rph.core.sound.PkdSounds
@@ -9,6 +10,7 @@ import org.rph.pkd.utils.extensions.sendActionBar
 abstract class RunManager(protected val run: Run) {
 
     private var checkpointTracker: CheckpointTracker? = null
+    private var boostManager: BoostManager? = null
     private var tickTimer = TickTimer()
     private var tickTask: Int? = null
 
@@ -17,6 +19,9 @@ abstract class RunManager(protected val run: Run) {
     protected fun startInternal() {
         checkpointTracker = CheckpointTracker(run.checkpoints, listOf(run.player), run.canSkipCPs, {_, cp -> onCheckpoint(cp)}, { onFinished() })
         checkpointTracker!!.resetToCheckpoint(run.player)
+
+        boostManager = BoostManager(run.player.uniqueId) { 10 }
+
         applyLayout()
 
         tickTimer.start()
@@ -30,18 +35,20 @@ abstract class RunManager(protected val run: Run) {
         tickTimer.stop()
         tickTimer.reset()
         checkpointTracker?.resetTickCounter()
+        boostManager?.stopCooldown()
         Bukkit.getScheduler().cancelTask(tickTask!!)
     }
 
     fun resetToCheckpoint() {
         if (checkpointTracker == null) return
 
-        checkpointTracker!!.resetToCheckpoint(run.player)
         PkdSounds.playResetSound(run.player)
 
         if (checkpointTracker!!.getCheckpoint(run.player) == 0) {
-            tickTimer.reset()
+            resetRun()
         }
+
+        checkpointTracker!!.resetToCheckpoint(run.player)
     }
 
     fun boost() {
@@ -49,6 +56,7 @@ abstract class RunManager(protected val run: Run) {
     }
 
     fun currentRun() = run
+    fun currentBoostManager() = boostManager
 
     private fun tick() {
         if (tickTimerDelayTicks < run.timerDelay) {

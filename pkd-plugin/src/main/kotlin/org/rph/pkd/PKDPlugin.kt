@@ -13,10 +13,12 @@ import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
+import org.rph.core.boost.CooldownAPI
 import org.rph.core.data.PkdData
 import org.rph.core.inventory.ItemBuilder
 import org.rph.core.inventory.SkullItemBuilder
 import org.rph.core.inventory.hotbar.HotbarAPI
+import org.rph.core.sound.PkdSounds
 import org.rph.pkd.skulls.letterSkullMap
 import org.rph.pkd.skulls.nextTexture
 import org.rph.pkd.skulls.prevTexture
@@ -36,6 +38,7 @@ class PKDPlugin : JavaPlugin(), Listener {
 
         Bukkit.getPluginManager().registerEvents(this, this)
         HotbarAPI.register(this)
+        CooldownAPI.register(this)
 
         registerLayouts()
 
@@ -174,7 +177,19 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        // ...
+                        getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
+                            onSuccess = {
+                                setState(1)
+                            },
+                            onCooldownEnd = {
+                                player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
+                                PkdSounds.playBoostReadySound(player)
+                                setState(0)
+                            },
+                            onFail = { secondsLeft ->
+                                player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
+                            }
+                        )
                     }
                 }
                 state(1) {
@@ -187,7 +202,19 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        // ...
+                        getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
+                            onSuccess = {
+                                setState(1)
+                            },
+                            onCooldownEnd = {
+                                player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
+                                PkdSounds.playBoostReadySound(player)
+                                setState(0)
+                            },
+                            onFail = { secondsLeft ->
+                                player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
+                            }
+                        )
                     }
                 }
             }

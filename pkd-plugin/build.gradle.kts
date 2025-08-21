@@ -29,7 +29,7 @@ dependencies {
         exclude(group = "org.bukkit", module = "bukkit")
     }
 
-    implementation("org.rph:pkd-core-v2:1.5.0")
+    implementation("org.rph:pkd-core-v2:1.6.1")
     implementation("com.samjakob:SpiGUI:v1.4.1")
 
     implementation(kotlin("stdlib"))
