@@ -9,11 +9,13 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import org.rph.core.data.PkdData
 import org.rph.core.inventory.hotbar.HotbarAPI
+import org.rph.pkd.state.runs.FullRunManager
 import org.rph.pkd.state.runs.RoomRunManager
 import org.rph.pkd.state.runs.Run
 import org.rph.pkd.state.runs.RunManager
 import org.rph.pkd.worlds.RoomsWorld
 import org.rph.pkd.worlds.RunWorld
+import java.io.File
 
 class StateManager(
     private val plugin: JavaPlugin,
@@ -24,13 +26,12 @@ class StateManager(
 
     private var currentMode: Mode = Mode.NONE
     private var currentRunManager: RunManager? = null
+    private var currentRunWorld: World? = null
 
-    fun tpToLobby() {
+    fun tpToLobby(callCleanup: Boolean = true) {
         if (currentMode == Mode.LOBBY) return
         onMainThread {
-            if (currentRunManager != null) {
-                currentRunManager!!.stop()
-            }
+            if (callCleanup) ensureOldStateCleanup()
 
             val world = Bukkit.createWorld(WorldCreator("world_lobby"))
                 ?: error("Lobby world not found or could not be created")
@@ -47,9 +48,7 @@ class StateManager(
 
     fun tpToRoom(roomName: String) {
         onMainThread {
-            if (currentRunManager != null) {
-                currentRunManager!!.stop()
-            }
+            ensureOldStateCleanup()
 
             val spawn = RoomsWorld.getSpawnLocation(roomName)
                 ?: error("Unknown room: $roomName")
@@ -103,15 +102,46 @@ class StateManager(
     }
 
     fun tpToRun(rooms: List<String>) {
-        println("Teleporting to run.")
+        ensureOldStateCleanup()
+
         RunWorld.createRunWorld(plugin, rooms) { run ->
-            println("Room Corners: ")
-            run.roomPositions.forEach { println(it) }
-            println("Checkpoints: ")
-            run.checkpoints.forEach { println(it) }
-            player.teleport(run.checkpoints[0])
+            ensureBasics(run.world)
+            currentRunWorld = run.world
+            currentMode = Mode.RUN
+
+            val runDataClass = Run(
+                plugin = plugin,
+                player = player,
+                rooms = run.roomPositions.keys.toList(),
+                roomPositions = run.roomPositions.values.toList(),
+                checkpoints = run.checkpoints
+            )
+
+            currentRunManager = FullRunManager(runDataClass)
+            currentRunManager!!.start()
         }
 
+    }
+
+    fun ensureOldStateCleanup() {
+        if (currentRunManager != null) {
+            currentRunManager!!.stop()
+        }
+        if (currentRunWorld != null) {
+            println("Cleaning up world ${currentRunWorld!!.name}...")
+            if (player.world.uid == currentRunWorld!!.uid) {
+                tpToLobby(false)
+            }
+
+            onMainThread {
+                Bukkit.unloadWorld(currentRunWorld, false)
+
+                val folder = currentRunWorld!!.worldFolder
+                if (folder.exists()) {
+                    folder.deleteRecursively()
+                }
+            }
+        }
     }
 
     private fun ensureBasics(world: World) {

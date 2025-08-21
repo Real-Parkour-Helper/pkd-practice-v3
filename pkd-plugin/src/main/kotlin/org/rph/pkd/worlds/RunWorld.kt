@@ -82,7 +82,7 @@ object RunWorld {
                     checkpoints.add(Location(world, roomCorner.x + cp.x, roomCorner.y + cp.y, roomCorner.z + cp.z))
                 }
 
-                roomPositions[room] = Triple(roomCorner.x.toInt(), roomCorner.z.toInt(), asset.meta!!.deathPlane ?: 2)
+                roomPositions[room] = Triple(roomCorner.z.toInt(), roomCorner.y.toInt(), asset.meta!!.deathPlane ?: 2)
 
                 lastBackDoorVec = if (asset.meta!!.backDoor != null) {
                     Pair(asset.meta!!.backDoor.x, asset.meta!!.backDoor.y)

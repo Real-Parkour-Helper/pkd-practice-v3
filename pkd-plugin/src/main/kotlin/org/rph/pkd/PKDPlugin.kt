@@ -86,6 +86,12 @@ class PKDPlugin : JavaPlugin(), Listener {
         getCommand("lobby").executor = LobbyCommand(this)
     }
 
+    override fun onDisable() {
+        stateManagers.forEach { (_, manager) ->
+            manager.ensureOldStateCleanup()
+        }
+    }
+
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
         val player = event.player
@@ -327,6 +333,111 @@ class PKDPlugin : JavaPlugin(), Listener {
 
                     onClick = { player ->
                         getStateManager(player)?.tpToNextRoom()
+                    }
+                }
+            }
+            slot(8) {
+                state(0) {
+                    item = ItemBuilder(Material.BED)
+                        .name("${ChatColor.RED}Leave Room")
+                        .lore("${ChatColor.GRAY}Return to the lobby.")
+                        .build()
+
+                    onClick = { player ->
+                        stateManagers[player.uniqueId]?.tpToLobby()
+                    }
+                }
+            }
+        }
+        HotbarAPI.registerLayout("fullRunLayout") {
+            slot(0) {
+                state(0) {
+                    item = ItemBuilder(Material.FEATHER)
+                        .name("${ChatColor.GREEN}Boost Forward!")
+                        .lore(
+                            "${ChatColor.GRAY}Propel yourself forwards in the air like a bird!",
+                            "${ChatColor.GRAY}(1 Minute Cooldown)"
+                        )
+                        .build()
+
+                    onClick = { player ->
+                        getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
+                            onSuccess = {
+                                setState(1)
+                            },
+                            onCooldownEnd = {
+                                player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
+                                PkdSounds.playBoostReadySound(player)
+                                setState(0)
+                            },
+                            onFail = { secondsLeft ->
+                                player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
+                            }
+                        )
+                    }
+                }
+                state(1) {
+                    item = ItemBuilder(Material.GHAST_TEAR)
+                        .name("${ChatColor.RED}Boost Forward!")
+                        .lore(
+                            "${ChatColor.GRAY}Propel yourself forwards in the air like a bird!",
+                            "${ChatColor.GRAY}(1 Minute Cooldown)"
+                        )
+                        .build()
+
+                    onClick = { player ->
+                        getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
+                            onSuccess = {
+                                setState(1)
+                            },
+                            onCooldownEnd = {
+                                player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
+                                PkdSounds.playBoostReadySound(player)
+                                setState(0)
+                            },
+                            onFail = { secondsLeft ->
+                                player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
+                            }
+                        )
+                    }
+                }
+            }
+            slot(4) {
+                state(0) {
+                    item = ItemBuilder(Material.GOLD_PLATE)
+                        .name("${ChatColor.GREEN}Last Checkpoint")
+                        .lore("${ChatColor.GRAY}Teleport to your last checkpoint.")
+                        .build()
+
+                    onClick = { player ->
+                        getStateManager(player)?.getRunManager()?.resetToCheckpoint()
+                    }
+                }
+            }
+            slot(7) {
+                state(0) {
+                    item = ItemBuilder(Material.REDSTONE)
+                        .name("${ChatColor.RED}Reset Run")
+                        .lore("${ChatColor.GRAY}Reset to the start of the run.")
+                        .build()
+
+                    onClick = { player ->
+                        getStateManager(player)?.getRunManager()?.resetRun()
+                    }
+                }
+            }
+        }
+        HotbarAPI.registerLayout("fullRunOverLayout") {
+            slot(4) {
+                state(0) {
+                    item = SkullItemBuilder()
+                        .name("${ChatColor.GREEN}Redo Run")
+                        .lore("${ChatColor.GRAY}Re-run this run.")
+                        .textureBase64(restartTexture)
+                        .build()
+
+                    onClick = { player ->
+                        getStateManager(player)?.getRunManager()?.resetRun()
                     }
                 }
             }

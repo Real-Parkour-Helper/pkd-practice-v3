@@ -30,7 +30,7 @@ abstract class RunManager(protected val run: Run) {
         }, 0L, 1L)
     }
 
-    fun stop() {
+    open fun stop() {
         if (tickTask == null) return
         tickTimer.stop()
         tickTimer.reset()
@@ -49,10 +49,6 @@ abstract class RunManager(protected val run: Run) {
         }
 
         checkpointTracker!!.resetToCheckpoint(run.player)
-    }
-
-    fun boost() {
-        // TODO
     }
 
     fun currentRun() = run
