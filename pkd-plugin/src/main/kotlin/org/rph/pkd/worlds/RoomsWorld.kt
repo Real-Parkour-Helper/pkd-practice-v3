@@ -133,6 +133,8 @@ object RoomsWorld {
             rows += allRooms.subList(i, minOf(i + roomsPerRow, allRooms.size))
         }
 
+        val pasteJobs = mutableListOf<Schematics.PasteJob>()
+
         var rowZ = 0.0
         for (row in rows) {
             var roomX = 0.0
@@ -145,10 +147,10 @@ object RoomsWorld {
                 )
                 roomLocations[room] = roomCorner
 
-                Schematics.pasteSchematic(
+                pasteJobs += Schematics.PasteJob(
                     asset.schem.toFile(),
-                    w,
-                    Location(w, roomX, floorY.toDouble(), rowZ)
+                    Location(w, roomX, floorY.toDouble(), rowZ),
+                    ignoreAir = true
                 )
 
                 roomX += asset.meta!!.width
@@ -157,6 +159,8 @@ object RoomsWorld {
 
             rowZ += maxLength
         }
+
+        Schematics.pasteBatch(w, pasteJobs)
 
         val versionFile = w.worldFolder.resolve(versionMarker)
         versionFile.writeText(PkdData.where())

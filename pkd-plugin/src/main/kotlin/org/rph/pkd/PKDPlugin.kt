@@ -40,6 +40,24 @@ class PKDPlugin : JavaPlugin(), Listener {
     override fun onEnable() {
         println("PKDPlugin is enabled!")
 
+        try {
+            val root = org.apache.logging.log4j.LogManager.getRootLogger()
+                    as org.apache.logging.log4j.core.Logger
+
+            root.addFilter(object : org.apache.logging.log4j.core.filter.AbstractFilter() {
+                override fun filter(event: org.apache.logging.log4j.core.LogEvent)
+                        : org.apache.logging.log4j.core.Filter.Result {
+                    val msg = event.message?.formattedMessage ?: event.message?.toString() ?: ""
+                    return if (msg.contains("@CuboidClipboard used by Schematics.paste") || msg.contains("Alternatives: { class com.sk89q.worldedit.extent.clipboard."))
+                        org.apache.logging.log4j.core.Filter.Result.DENY
+                    else
+                        org.apache.logging.log4j.core.Filter.Result.NEUTRAL
+                }
+            })
+        } catch (t: Throwable) {
+            logger.warning("Failed to install Log4j2 root filter: ${t.javaClass.simpleName}: ${t.message}")
+        }
+
         Bukkit.getPluginManager().registerEvents(this, this)
         HotbarAPI.register(this)
         CooldownAPI.register(this)

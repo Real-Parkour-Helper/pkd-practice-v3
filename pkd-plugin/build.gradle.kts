@@ -32,6 +32,9 @@ dependencies {
     implementation("org.rph:pkd-core-v2:1.6.1")
     implementation("com.samjakob:SpiGUI:v1.4.1")
 
+    compileOnly("org.apache.logging.log4j:log4j-api:2.12.1")
+    compileOnly("org.apache.logging.log4j:log4j-core:2.12.1")
+
     implementation(kotlin("stdlib"))
 }
 

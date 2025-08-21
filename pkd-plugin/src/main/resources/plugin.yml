@@ -4,7 +4,7 @@ main: org.rph.pkd.PKDPlugin
 description: The plugin backing the parkour duels practice server
 author: _spqghett1
 
-depend: [ ProtocolLib, WorldEdit ]
+depend: [ ProtocolLib, FastAsyncWorldEdit ]
 
 commands:
   rooms:

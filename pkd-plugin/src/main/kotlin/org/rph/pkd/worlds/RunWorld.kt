@@ -53,6 +53,8 @@ object RunWorld {
             val remainingRooms = mutableListOf<String>()
             rooms.forEachIndexed { index, s -> if (index > 0) remainingRooms.add(s) }
 
+            val pasteJobs = mutableListOf<Schematics.PasteJob>()
+
             var lastBackDoorVec: Pair<Int, Int>? = null // x,y
             var lastRoomCorner: Vector? = null
             var lastRoomDepth: Int? = null
@@ -71,7 +73,10 @@ object RunWorld {
                 val lastCorner = lastRoomCorner ?: Vector(0, floorY, 0)
                 var roomCorner = lastCorner.add(Vector(transposeVec.first, transposeVec.second, lastRoomDepth ?: 0))
 
-                Schematics.pasteSchematic(asset.schem.toFile(), world, Location(world, roomCorner.x, roomCorner.y, roomCorner.z))
+                pasteJobs += Schematics.PasteJob(
+                    asset.schem.toFile(),
+                    Location(world, roomCorner.x, roomCorner.y, roomCorner.z)
+                )
 
                 for (cp in asset.meta!!.checkpoints) {
                     checkpoints.add(Location(world, roomCorner.x + cp.x, roomCorner.y + cp.y, roomCorner.z + cp.z))
@@ -85,6 +90,8 @@ object RunWorld {
                 lastRoomCorner = roomCorner
                 lastRoomDepth = asset.meta!!.length
             }
+
+            Schematics.pasteBatch(world, pasteJobs)
 
             cb(GeneratedWorld(roomPositions, checkpoints, world))
         }
