@@ -3,6 +3,7 @@ package org.rph.pkd.state
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
+import org.bukkit.World
 import org.bukkit.WorldCreator
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
@@ -33,15 +34,8 @@ class StateManager(
             val world = Bukkit.createWorld(WorldCreator("world_lobby"))
                 ?: error("Lobby world not found or could not be created")
 
-            world.setGameRuleValue("doDaylightCycle", "false")
-            world.setGameRuleValue("doWeatherCycle", "false")
-            world.setGameRuleValue("doMobSpawning", "false")
-            world.setGameRuleValue("randomTickSpeed", "0")
-            world.setStorm(false)
-            world.time = 6000L
-
             val spawn = Location(world, 0.5, 65.0, 0.5)
-            ensureBasics()
+            ensureBasics(world)
             player.teleport(spawn)
 
             HotbarAPI.applyLayout(player, "lobbyLayout")
@@ -64,8 +58,9 @@ class StateManager(
                 ?: error("Unable to get checkpoints for $roomName")
             val asset = PkdData.get(roomName)
                 ?: error("Unable to get room asset for $roomName")
+            val world = RoomsWorld.getWorld()
 
-            ensureBasics()
+            ensureBasics(world)
             currentMode = Mode.ROOMS
 
             val cp = mutableListOf(spawn)
@@ -106,10 +101,17 @@ class StateManager(
         return currentRunManager
     }
 
-    private fun ensureBasics() {
+    private fun ensureBasics(world: World) {
         player.gameMode = GameMode.ADVENTURE
         player.exp = 0F
         player.level = 0
+
+        world.setGameRuleValue("doDaylightCycle", "false")
+        world.setGameRuleValue("doWeatherCycle", "false")
+        world.setGameRuleValue("doMobSpawning", "false")
+        world.setGameRuleValue("randomTickSpeed", "0")
+        world.setStorm(false)
+        world.time = 6000L
     }
 
     private fun onMainThread(action: () -> Unit) {

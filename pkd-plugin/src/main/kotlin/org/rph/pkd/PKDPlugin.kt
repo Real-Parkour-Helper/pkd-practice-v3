@@ -19,6 +19,10 @@ import org.rph.core.inventory.ItemBuilder
 import org.rph.core.inventory.SkullItemBuilder
 import org.rph.core.inventory.hotbar.HotbarAPI
 import org.rph.core.sound.PkdSounds
+import org.rph.pkd.commands.LobbyCommand
+import org.rph.pkd.commands.NextCommand
+import org.rph.pkd.commands.PrevCommand
+import org.rph.pkd.commands.RoomsCommand
 import org.rph.pkd.skulls.letterSkullMap
 import org.rph.pkd.skulls.nextTexture
 import org.rph.pkd.skulls.prevTexture
@@ -57,6 +61,11 @@ class PKDPlugin : JavaPlugin(), Listener {
         RoomsWorld.init()
 
         spiGUI = SpiGUI(this)
+
+        getCommand("rooms").executor = RoomsCommand(this)
+        getCommand("prev").executor = PrevCommand(this)
+        getCommand("next").executor = NextCommand(this)
+        getCommand("lobby").executor = LobbyCommand(this)
     }
 
     @EventHandler
