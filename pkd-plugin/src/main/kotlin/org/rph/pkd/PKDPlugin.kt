@@ -181,7 +181,7 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        // ...
+                        getStateManager(player)?.getRunManager()?.resetToCheckpoint()
                     }
                 }
             }
@@ -193,7 +193,7 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        // ...
+                        getStateManager(player)?.getRunManager()?.resetRun()
                     }
                 }
             }
@@ -217,5 +217,6 @@ class PKDPlugin : JavaPlugin(), Listener {
     }
 
     fun String.upperCaseWords() =
-        this.split(" ").joinToString(" ") { it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
+        this.split(" ")
+            .joinToString(" ") { it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
 }
