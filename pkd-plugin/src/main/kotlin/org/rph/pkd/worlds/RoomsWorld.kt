@@ -6,6 +6,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.WorldCreator
+import org.bukkit.entity.ArmorStand
 import org.bukkit.util.Vector
 import org.rph.core.data.PkdData
 import org.rph.pkd.utils.Schematics
@@ -134,6 +135,7 @@ object RoomsWorld {
         }
 
         val pasteJobs = mutableListOf<Schematics.PasteJob>()
+        val armorstandSpawns = mutableListOf<Pair<Location, String>>()
 
         var rowZ = 0.0
         for (row in rows) {
@@ -146,6 +148,14 @@ object RoomsWorld {
                     roomX, floorY.toDouble(), rowZ
                 )
                 roomLocations[room] = roomCorner
+
+                val checkpoints = asset.meta!!.checkpoints
+                for ((idx, checkpoint) in checkpoints.withIndex()) {
+                    val loc1 = Location(w, roomCorner.x + checkpoint.x + 0.5, roomCorner.y + checkpoint.y + 0.5, roomCorner.z + checkpoint.z + 0.5)
+                    val loc2 = Location(w, roomCorner.x + checkpoint.x + 0.5, roomCorner.y + checkpoint.y + 0.2, roomCorner.z + checkpoint.z + 0.5)
+                    armorstandSpawns.add(Pair(loc1, "§a§lCHECKPOINT"))
+                    armorstandSpawns.add(Pair(loc2, "§e§l#${idx + 1}"))
+                }
 
                 pasteJobs += Schematics.PasteJob(
                     asset.schem.toFile(),
@@ -161,6 +171,18 @@ object RoomsWorld {
         }
 
         Schematics.pasteBatch(w, pasteJobs)
+
+        armorstandSpawns.forEach { pair ->
+            val loc = pair.first
+            val tag = pair.second
+            w.spawn(loc, ArmorStand::class.java).apply {
+                isVisible = false
+                isCustomNameVisible = true
+                customName = tag
+                isMarker = true
+                setGravity(false)
+            }
+        }
 
         val versionFile = w.worldFolder.resolve(versionMarker)
         versionFile.writeText(PkdData.where())

@@ -4,6 +4,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.WorldCreator
+import org.bukkit.entity.ArmorStand
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.util.Vector
 import org.rph.core.data.PkdData
@@ -58,6 +59,7 @@ object RunWorld {
             rooms.forEachIndexed { index, s -> if (index > 0) remainingRooms.add(s) }
 
             val pasteJobs = mutableListOf<Schematics.PasteJob>()
+            val armorstandSpawns = mutableListOf<Pair<Location, String>>()
 
             var addedCheckpoints = 0
             val currentDoorPair = mutableListOf<Location>()
@@ -65,7 +67,7 @@ object RunWorld {
             var lastBackDoorVec: Pair<Int, Int>? = null // x,y
             var lastRoomCorner: Vector? = null
             var lastRoomDepth: Int? = null
-            for (room in remainingRooms) {
+            for ((roomIdx, room) in remainingRooms.withIndex()) {
                 val asset = PkdData.get(room) ?: error("Asset for room $room not found.")
                 val frontDoorVec = if (asset.meta!!.frontDoor != null) {
                     Pair(asset.meta!!.frontDoor.x, asset.meta!!.frontDoor.y)
@@ -120,9 +122,20 @@ object RunWorld {
 
                 }
 
-                for (cp in asset.meta!!.checkpoints) {
+                val cps = asset.meta!!.checkpoints
+                for ((idx, cp) in cps.withIndex()) {
                     checkpoints.add(Location(world, roomCorner.x + cp.x, roomCorner.y + cp.y, roomCorner.z + cp.z))
-                    if (asset.meta!!.frontDoor != null) addedCheckpoints++
+                    if (asset.meta!!.frontDoor != null) {
+                        addedCheckpoints++
+                        val loc1 = Location(world, roomCorner.x + cp.x + 0.5, roomCorner.y + cp.y + 0.5, roomCorner.z + cp.z + 0.5)
+                        val loc2 = Location(world, roomCorner.x + cp.x + 0.5, roomCorner.y + cp.y + 0.2, roomCorner.z + cp.z + 0.5)
+                        if (roomIdx == remainingRooms.size - 1 && idx == cps.size - 1) {
+                            armorstandSpawns.add(Pair(loc1, "§6§lPARKOUR END"))
+                        } else {
+                            armorstandSpawns.add(Pair(loc1, "§a§lCHECKPOINT"))
+                            armorstandSpawns.add(Pair(loc2, "§e§l#$addedCheckpoints"))
+                        }
+                    }
                 }
 
                 lastRoomCorner = roomCorner
@@ -130,6 +143,17 @@ object RunWorld {
             }
 
             Schematics.pasteBatch(world, pasteJobs)
+            armorstandSpawns.forEach { pair ->
+                val loc = pair.first
+                val tag = pair.second
+                world.spawn(loc, ArmorStand::class.java).apply {
+                    isVisible = false
+                    isCustomNameVisible = true
+                    customName = tag
+                    isMarker = true
+                    setGravity(false)
+                }
+            }
 
             cb(GeneratedWorld(roomPositions, checkpoints, world, doorPositions, dropDoorsAt))
         }
