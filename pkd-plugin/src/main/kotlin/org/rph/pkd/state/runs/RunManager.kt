@@ -54,7 +54,7 @@ abstract class RunManager(protected val run: Run) {
     fun currentRun() = run
     fun currentBoostManager() = boostManager
 
-    private fun tick() {
+    protected open fun tick() {
         if (tickTimerDelayTicks < run.timerDelay) {
             tickTimerDelayTicks++
         } else {
@@ -87,6 +87,10 @@ abstract class RunManager(protected val run: Run) {
 
     protected fun getElapsedTime(): String {
         return tickTimer.getElapsedTimeString()
+    }
+
+    protected fun getCurrentCheckpoint(): Int {
+        return checkpointTracker?.getCheckpoint(run.player) ?: 0
     }
 
     protected fun stopTickTimer() {

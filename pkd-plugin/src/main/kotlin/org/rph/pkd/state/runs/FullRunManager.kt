@@ -1,6 +1,8 @@
 package org.rph.pkd.state.runs
 
 import org.bukkit.Bukkit
+import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import org.github.paperspigot.Title
@@ -10,6 +12,9 @@ import org.rph.core.sound.PkdSounds
 class FullRunManager(run: Run) : RunManager(run) {
 
     private var countdownTask: BukkitTask? = null
+    private var resetDoorBlocks = mutableListOf<MutableList<TempBlock>>()
+    private var originalDoorPositions: MutableList<Pair<Location, Location>> = mutableListOf()
+    private var originalDropDoorsAt: MutableList<Int> = mutableListOf()
 
     override fun start() {
         var countdown = 10 // TODO: get from config
@@ -17,6 +22,11 @@ class FullRunManager(run: Run) : RunManager(run) {
         val preGameSpawn = run.checkpoints[0]
         run.player.teleport(preGameSpawn)
         run.checkpoints.removeAt(0)
+
+        run.doorPositions?.forEach { originalDoorPositions.add(it) }
+        run.dropDoorsAt?.forEach { originalDropDoorsAt.add(it) }
+
+        println("world: ${run.world}")
 
         countdownTask = object : BukkitRunnable() {
             override fun run() {
@@ -54,6 +64,26 @@ class FullRunManager(run: Run) : RunManager(run) {
         super.stop()
     }
 
+    override fun tick() {
+        super.tick()
+
+        if (run.dropDoorsAt.isNullOrEmpty() || run.doorPositions.isNullOrEmpty()) return
+
+        val currentCheckpoint = getCurrentCheckpoint()
+        if (currentCheckpoint == run.dropDoorsAt[0]) {
+            run.dropDoorsAt.removeAt(0)
+            val doorPair = run.doorPositions[0]
+            println("doorPair: $doorPair")
+            run.doorPositions.removeAt(0)
+            if (doorPair != null) {
+                println("dropping 1")
+                removeDoor(doorPair.first)
+                println("dropping 2")
+                removeDoor(doorPair.second)
+            }
+        }
+    }
+
     override fun applyLayout() {
         HotbarAPI.applyLayout(run.player, "fullRunLayout")
     }
@@ -73,8 +103,70 @@ class FullRunManager(run: Run) : RunManager(run) {
     }
 
     override fun resetRun() {
-        stop()
-        startInternal()
+        Bukkit.getScheduler().runTask(run.plugin) {
+            stop()
+            if (run.world != null) {
+                resetDoorBlocks.forEach {
+                    it.forEach { block ->
+                        run.world.getBlockAt(
+                            Location(
+                                run.world,
+                                block.x.toDouble(),
+                                block.y.toDouble(),
+                                block.z.toDouble()
+                            )
+                        ).setTypeIdAndData(block.id, block.data, false)
+                    }
+                }
+            }
+            resetDoorBlocks.clear()
+
+            run.doorPositions?.clear()
+            run.dropDoorsAt?.clear()
+            originalDoorPositions.forEach { run.doorPositions?.add(it) }
+            originalDropDoorsAt.forEach { run.dropDoorsAt?.add(it) }
+
+            startInternal()
+        }
+    }
+
+    private data class TempBlock(
+        val x: Int,
+        val y: Int,
+        val z: Int,
+        val id: Int,
+        val data: Byte
+    )
+
+    private fun removeDoor(bottomRight: Location) {
+        println("dropping door at $bottomRight (${run.world})")
+        if (run.world == null) return
+
+        val tempBlocks = mutableListOf<TempBlock>()
+        for (dx in 0..4) {
+            for (dy in 0..4) {
+                val x = (bottomRight.x + dx).toInt()
+                val y = (bottomRight.y + dy).toInt()
+                val z = bottomRight.z.toInt()
+                val block = run.world.getBlockAt(x, y, z)
+                tempBlocks.add(
+                    TempBlock(x, y, z, block.typeId, block.data)
+                )
+            }
+        }
+
+        for (dx in 0..4) {
+            for (dy in 0..4) {
+                val x = (bottomRight.x + dx).toInt()
+                val y = (bottomRight.y + dy).toInt()
+                val z = bottomRight.z.toInt()
+
+                val block = run.world.getBlockAt(x, y, z)
+                block.type = Material.AIR
+            }
+        }
+
+        resetDoorBlocks.add(tempBlocks)
     }
 
 }

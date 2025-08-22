@@ -18,13 +18,17 @@ object RunWorld {
     data class GeneratedWorld(
         val roomPositions: MutableMap<String, Triple<Int, Int, Int>>,
         val checkpoints: MutableList<Location>,
-        val world: World
+        val world: World,
+        val doors: MutableList<Pair<Location, Location>>,
+        val dropDoorsAt: MutableList<Int>
     )
 
     fun createRunWorld(plugin: JavaPlugin, rooms: List<String>, cb: (GeneratedWorld) -> Unit) {
         Bukkit.getScheduler().runTask(plugin) {
             val roomPositions = mutableMapOf<String, Triple<Int, Int, Int>>()
             val checkpoints = mutableListOf<Location>()
+            val doorPositions = mutableListOf<Pair<Location, Location>>()
+            var dropDoorsAt = mutableListOf<Int>()
             val worldName = "tmp_run_${UUID.randomUUID()}"
 
             val world = WorldCreator(worldName)
@@ -55,6 +59,9 @@ object RunWorld {
 
             val pasteJobs = mutableListOf<Schematics.PasteJob>()
 
+            var addedCheckpoints = 0
+            val currentDoorPair = mutableListOf<Location>()
+
             var lastBackDoorVec: Pair<Int, Int>? = null // x,y
             var lastRoomCorner: Vector? = null
             var lastRoomDepth: Int? = null
@@ -78,10 +85,6 @@ object RunWorld {
                     Location(world, roomCorner.x, roomCorner.y, roomCorner.z)
                 )
 
-                for (cp in asset.meta!!.checkpoints) {
-                    checkpoints.add(Location(world, roomCorner.x + cp.x, roomCorner.y + cp.y, roomCorner.z + cp.z))
-                }
-
                 roomPositions[room] = Triple(roomCorner.z.toInt(), roomCorner.y.toInt(), asset.meta!!.deathPlane ?: 2)
 
                 lastBackDoorVec = if (asset.meta!!.backDoor != null) {
@@ -97,6 +100,10 @@ object RunWorld {
                             door.schem.toFile(),
                             pasteLocation
                         )
+                        currentDoorPair.add(pasteLocation)
+                        doorPositions.add(Pair(currentDoorPair[0], currentDoorPair[1]))
+                        currentDoorPair.clear()
+                        dropDoorsAt.add(addedCheckpoints)
                     }
                 }
 
@@ -108,8 +115,14 @@ object RunWorld {
                             door.schem.toFile(),
                             pasteLocation
                         )
+                        currentDoorPair.add(pasteLocation)
                     }
 
+                }
+
+                for (cp in asset.meta!!.checkpoints) {
+                    checkpoints.add(Location(world, roomCorner.x + cp.x, roomCorner.y + cp.y, roomCorner.z + cp.z))
+                    if (asset.meta!!.frontDoor != null) addedCheckpoints++
                 }
 
                 lastRoomCorner = roomCorner
@@ -118,7 +131,7 @@ object RunWorld {
 
             Schematics.pasteBatch(world, pasteJobs)
 
-            cb(GeneratedWorld(roomPositions, checkpoints, world))
+            cb(GeneratedWorld(roomPositions, checkpoints, world, doorPositions, dropDoorsAt))
         }
     }
 

@@ -114,8 +114,14 @@ class StateManager(
                 player = player,
                 rooms = run.roomPositions.keys.toList(),
                 roomPositions = run.roomPositions.values.toList(),
-                checkpoints = run.checkpoints
+                world = run.world,
+                checkpoints = run.checkpoints,
+                doorPositions = run.doors,
+                dropDoorsAt = run.dropDoorsAt
             )
+
+            println("Dropping doors at: ${run.dropDoorsAt.joinToString(", ")}")
+            println("Door positions: ${run.doors.joinToString(", ")}")
 
             currentRunManager = FullRunManager(runDataClass)
             currentRunManager!!.start()

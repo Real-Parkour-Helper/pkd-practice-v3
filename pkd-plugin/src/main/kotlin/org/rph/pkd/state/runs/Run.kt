@@ -13,5 +13,7 @@ data class Run(
     val checkpoints: MutableList<Location>,
     val canSkipCPs: Boolean = false,
     val timerDelay: Long = 0L,
-    val world: World? = null
+    val world: World? = null,
+    val doorPositions: MutableList<Pair<Location, Location>>? = null,
+    val dropDoorsAt: MutableList<Int>? = null
 )
