@@ -87,6 +87,31 @@ object RunWorld {
                 lastBackDoorVec = if (asset.meta!!.backDoor != null) {
                     Pair(asset.meta!!.backDoor.x, asset.meta!!.backDoor.y)
                 } else null // when this is the last room we don't care anymore
+
+                // paste doors
+                if (asset.meta!!.frontDoor != null) {
+                    val pasteLocation = Location(world, roomCorner.x + asset.meta!!.frontDoor.x + 1, roomCorner.y + asset.meta!!.frontDoor.y + 1, roomCorner.z + asset.meta!!.frontDoor.z)
+                    val door = PkdData.doors(asset.map).firstOrNull { it.front }
+                    if (door != null) {
+                        pasteJobs += Schematics.PasteJob(
+                            door.schem.toFile(),
+                            pasteLocation
+                        )
+                    }
+                }
+
+                if (asset.meta!!.backDoor != null) {
+                    val pasteLocation = Location(world, roomCorner.x + asset.meta!!.backDoor.x + 1, roomCorner.y + asset.meta!!.backDoor.y + 1, roomCorner.z + asset.meta!!.backDoor.z)
+                    val door = PkdData.doors(asset.map).firstOrNull { !it.front }
+                    if (door != null) {
+                        pasteJobs += Schematics.PasteJob(
+                            door.schem.toFile(),
+                            pasteLocation
+                        )
+                    }
+
+                }
+
                 lastRoomCorner = roomCorner
                 lastRoomDepth = asset.meta!!.length
             }

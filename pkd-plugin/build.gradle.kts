@@ -29,7 +29,7 @@ dependencies {
         exclude(group = "org.bukkit", module = "bukkit")
     }
 
-    implementation("org.rph:pkd-core-v2:1.6.1")
+    implementation("org.rph:pkd-core-v2:1.7.0")
     implementation("com.samjakob:SpiGUI:v1.4.1")
 
     compileOnly("org.apache.logging.log4j:log4j-api:2.12.1")
