@@ -26,7 +26,7 @@ class FullRunManager(run: Run) : RunManager(run) {
         run.doorPositions?.forEach { originalDoorPositions.add(it) }
         run.dropDoorsAt?.forEach { originalDropDoorsAt.add(it) }
 
-        println("world: ${run.world}")
+        HotbarAPI.applyLayout(run.player, "preRunLayout")
 
         countdownTask = object : BukkitRunnable() {
             override fun run() {
@@ -73,12 +73,9 @@ class FullRunManager(run: Run) : RunManager(run) {
         if (currentCheckpoint == run.dropDoorsAt[0]) {
             run.dropDoorsAt.removeAt(0)
             val doorPair = run.doorPositions[0]
-            println("doorPair: $doorPair")
             run.doorPositions.removeAt(0)
             if (doorPair != null) {
-                println("dropping 1")
                 removeDoor(doorPair.first)
-                println("dropping 2")
                 removeDoor(doorPair.second)
             }
         }
@@ -99,7 +96,7 @@ class FullRunManager(run: Run) : RunManager(run) {
         val time = getElapsedTime()
         run.player.sendMessage("§e§lCOMPLETED!§r §aYou completed the parkour in §6§l$time!")
         PkdSounds.playCheckpointSound(run.player)
-        HotbarAPI.applyLayout(run.player, "roomRunOverLayout")
+        HotbarAPI.applyLayout(run.player, "fullRunOverLayout")
     }
 
     override fun resetRun() {
@@ -139,7 +136,6 @@ class FullRunManager(run: Run) : RunManager(run) {
     )
 
     private fun removeDoor(bottomRight: Location) {
-        println("dropping door at $bottomRight (${run.world})")
         if (run.world == null) return
 
         val tempBlocks = mutableListOf<TempBlock>()

@@ -1,10 +1,6 @@
 package org.rph.pkd.state
 
-import org.bukkit.Bukkit
-import org.bukkit.GameMode
-import org.bukkit.Location
-import org.bukkit.World
-import org.bukkit.WorldCreator
+import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import org.rph.core.data.PkdData
@@ -120,13 +116,46 @@ class StateManager(
                 dropDoorsAt = run.dropDoorsAt
             )
 
-            println("Dropping doors at: ${run.dropDoorsAt.joinToString(", ")}")
-            println("Door positions: ${run.doors.joinToString(", ")}")
-
             currentRunManager = FullRunManager(runDataClass)
             currentRunManager!!.start()
         }
 
+    }
+
+    fun startRun(map: String = "all", roomCount: Int = 8) {
+        val rooms = mutableListOf<String>()
+        if (map == "all") {
+            rooms.addAll(PkdData.rooms())
+        } else if (map.contains("|")) {
+            map.split("|").map { it.lowercase() }.forEach { m ->
+                val r = PkdData.rooms(m)
+                if (r.isEmpty()) {
+                    player.sendMessage("${ChatColor.RED}No rooms found for map '${ChatColor.GRAY}$m${ChatColor.RED}'.")
+                } else {
+                    rooms.addAll(r)
+                }
+            }
+        } else {
+            val r = PkdData.rooms(map)
+            if (r.isEmpty()) {
+                player.sendMessage("${ChatColor.RED}No rooms found for map '${ChatColor.GRAY}$map${ChatColor.RED}'.")
+            } else {
+                rooms.addAll(r)
+            }
+        }
+
+        val pregame = rooms.filter { "pregame" in it }.random()
+        val start = rooms.filter { "start" in it }.random()
+
+        val middleRooms = rooms.filter { "start" !in it && "end" !in it && "pregame" !in it }
+        val roomsToUse = pickRandom(middleRooms, roomCount)
+
+        val end = rooms.filter { "end" in it }.random()
+
+        val run = mutableListOf(pregame, start)
+        run.addAll(roomsToUse)
+        run.add(end)
+        tpToRun(run)
     }
 
     fun ensureOldStateCleanup() {
@@ -147,6 +176,15 @@ class StateManager(
                     folder.deleteRecursively()
                 }
             }
+        }
+    }
+
+    private fun <T> pickRandom(list: List<T>, n: Int): List<T> {
+        if (list.isEmpty()) return emptyList()
+        return if (n <= list.size) {
+            list.shuffled().take(n)
+        } else {
+            List(n) { list.random() }
         }
     }
 

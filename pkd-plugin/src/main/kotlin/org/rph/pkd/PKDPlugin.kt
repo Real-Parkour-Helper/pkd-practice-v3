@@ -19,10 +19,7 @@ import org.rph.core.inventory.ItemBuilder
 import org.rph.core.inventory.SkullItemBuilder
 import org.rph.core.inventory.hotbar.HotbarAPI
 import org.rph.core.sound.PkdSounds
-import org.rph.pkd.commands.LobbyCommand
-import org.rph.pkd.commands.NextCommand
-import org.rph.pkd.commands.PrevCommand
-import org.rph.pkd.commands.RoomsCommand
+import org.rph.pkd.commands.*
 import org.rph.pkd.skulls.letterSkullMap
 import org.rph.pkd.skulls.nextTexture
 import org.rph.pkd.skulls.prevTexture
@@ -84,6 +81,7 @@ class PKDPlugin : JavaPlugin(), Listener {
         getCommand("prev").executor = PrevCommand(this)
         getCommand("next").executor = NextCommand(this)
         getCommand("lobby").executor = LobbyCommand(this)
+        getCommand("run").executor = RunCommand(this)
     }
 
     override fun onDisable() {
@@ -193,15 +191,47 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        getStateManager(player)?.tpToRun(listOf(
-                            "atlantis_pregame",
-                            "castle_start",
-                            "atlantis_1a",
-                            "castle_fortress",
-                            "atlantis_5c",
-                            "atlantis_1d",
-                            "castle_end"
-                        ))
+                        val menu = spiGUI.create("8-Room Practice Run", 1)
+
+                        val allItem = ItemBuilder(Material.STAINED_GLASS)
+                            .name("${ChatColor.GREEN}All Maps")
+                            .lore("${ChatColor.GRAY}Click to start an 8 room run with rooms from all maps.")
+                            .durability(4.toShort())
+                            .build()
+
+                        val allButton = SGButton(allItem).withListener { event ->
+                            getStateManager(player)?.startRun()
+                        }
+
+                        menu.addButton(allButton)
+
+                        PkdData.maps().forEachIndexed { idx, map ->
+                            if (map == "All") return@forEachIndexed
+
+                            val firstLetter = map[0].lowercase()
+                            val letterSkullTexture = letterSkullMap[firstLetter]
+                            val item = if (letterSkullTexture != null) {
+                                SkullItemBuilder()
+                                    .name("${ChatColor.GREEN}${map.upperCaseWords()}")
+                                    .lore("${ChatColor.GRAY}Click to start an 8 room run with rooms from $map.")
+                                    .textureBase64(letterSkullTexture)
+                                    .build()
+                            } else {
+                                ItemBuilder(Material.STAINED_CLAY)
+                                    .name("${ChatColor.GREEN}${map.upperCaseWords()}")
+                                    .lore("${ChatColor.GRAY}Click to start an 8 room run with rooms from $map.")
+                                    .durability(idx.toShort())
+                                    .build()
+                            }
+
+                            val button = SGButton(item).withListener { event ->
+                                getStateManager(player)?.startRun(map)
+                            }
+
+                            menu.addButton(button)
+                        }
+
+                        player.openInventory(menu.inventory)
                     }
                 }
             }
@@ -286,7 +316,7 @@ class PKDPlugin : JavaPlugin(), Listener {
             slot(8) {
                 state(0) {
                     item = ItemBuilder(Material.BED)
-                        .name("${ChatColor.RED}Leave Room")
+                        .name("${ChatColor.RED}Lobby")
                         .lore("${ChatColor.GRAY}Return to the lobby.")
                         .build()
 
@@ -339,7 +369,21 @@ class PKDPlugin : JavaPlugin(), Listener {
             slot(8) {
                 state(0) {
                     item = ItemBuilder(Material.BED)
-                        .name("${ChatColor.RED}Leave Room")
+                        .name("${ChatColor.RED}Lobby")
+                        .lore("${ChatColor.GRAY}Return to the lobby.")
+                        .build()
+
+                    onClick = { player ->
+                        stateManagers[player.uniqueId]?.tpToLobby()
+                    }
+                }
+            }
+        }
+        HotbarAPI.registerLayout("preRunLayout") {
+            slot(0) {
+                state(0) {
+                    item = ItemBuilder(Material.BED)
+                        .name("${ChatColor.RED}Lobby")
                         .lore("${ChatColor.GRAY}Return to the lobby.")
                         .build()
 
@@ -444,7 +488,7 @@ class PKDPlugin : JavaPlugin(), Listener {
             slot(8) {
                 state(0) {
                     item = ItemBuilder(Material.BED)
-                        .name("${ChatColor.RED}Leave Room")
+                        .name("${ChatColor.RED}Lobby")
                         .lore("${ChatColor.GRAY}Return to the lobby.")
                         .build()
 

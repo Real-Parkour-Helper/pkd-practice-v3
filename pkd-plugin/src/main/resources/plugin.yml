@@ -23,3 +23,7 @@ commands:
     description: Switch to the lobby world
     usage: /lobby
     aliases: [ lobby, l ]
+  run:
+    description: Start a custom run.
+    usage: /run <map> [# of rooms]
+    aliased: [ play ]
