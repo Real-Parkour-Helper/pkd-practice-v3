@@ -2,8 +2,16 @@
 
 # Server
 server/*
+!server/world_lobby
+server/world_lobby/*
+!server/world_lobby/region.default
+!server/world_lobby/level.dat.default
 
 # Plugin
 pkd-plugin/.gradle
 pkd-plugin/.kotlin
 pkd-plugin/build/
+
+# Velocity
+proxy/*
+!proxy/velocity.toml
