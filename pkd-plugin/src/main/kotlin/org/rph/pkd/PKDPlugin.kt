@@ -28,6 +28,7 @@ import org.rph.pkd.skulls.prevTexture
 import org.rph.pkd.skulls.restartTexture
 import org.rph.pkd.state.StateManager
 import org.rph.pkd.state.runs.RoomRunManager
+import org.rph.pkd.utils.SlimeLagback
 import org.rph.pkd.utils.extensions.upperCaseWords
 import org.rph.pkd.worlds.RoomsWorld
 import java.util.*
@@ -101,6 +102,8 @@ class PKDPlugin : JavaPlugin(), Listener {
         getCommand("run").executor = RunCommand(this)
         getCommand("custom").executor = CustomCommand(this)
         getCommand("config").executor = ConfigCommand(this)
+
+        Bukkit.getPluginManager().registerEvents(SlimeLagback(this), this)
     }
 
     override fun onDisable() {

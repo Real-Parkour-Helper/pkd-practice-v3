@@ -41,6 +41,14 @@ class ConfigCommand(private val plugin: PKDPlugin) : CommandExecutor {
                     sender.sendMessage("§cInvalid integer value.")
                 }
             }
+            is Boolean -> {
+                val boolValue = value.toBooleanStrictOrNull()
+                if (boolValue != null) {
+                    plugin.setConfigField(key, boolValue)
+                } else {
+                    sender.sendMessage("§cInvalid boolean value.")
+                }
+            }
             else -> sender.sendMessage("§cUnsupported config type.")
         }
         return true
