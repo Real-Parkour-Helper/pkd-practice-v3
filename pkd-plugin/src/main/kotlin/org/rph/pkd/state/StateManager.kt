@@ -2,9 +2,9 @@ package org.rph.pkd.state
 
 import org.bukkit.*
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 import org.rph.core.data.PkdData
 import org.rph.core.inventory.hotbar.HotbarAPI
+import org.rph.pkd.PKDPlugin
 import org.rph.pkd.state.runs.FullRunManager
 import org.rph.pkd.state.runs.RoomRunManager
 import org.rph.pkd.state.runs.Run
@@ -13,7 +13,7 @@ import org.rph.pkd.worlds.RoomsWorld
 import org.rph.pkd.worlds.RunWorld
 
 class StateManager(
-    private val plugin: JavaPlugin,
+    private val plugin: PKDPlugin,
     private val player: Player
 ){
 

@@ -67,4 +67,6 @@ class RoomRunManager(run: Run) : RunManager(run) {
         startInternal()
     }
 
+    override fun getBoostCooldown(): Int = 0
+
 }

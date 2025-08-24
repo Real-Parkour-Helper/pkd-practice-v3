@@ -17,7 +17,7 @@ class FullRunManager(run: Run) : RunManager(run) {
     private var originalDropDoorsAt: MutableList<Int> = mutableListOf()
 
     override fun start() {
-        var countdown = 10 // TODO: get from config
+        var countdown = run.plugin.getConfigField("pregameCountdown").toString().toIntOrNull() ?: 15
 
         val preGameSpawn = run.checkpoints[0]
         run.player.teleport(preGameSpawn)
@@ -164,5 +164,7 @@ class FullRunManager(run: Run) : RunManager(run) {
 
         resetDoorBlocks.add(tempBlocks)
     }
+
+    override fun getBoostCooldown(): Int = run.plugin.getConfigField("boostCooldown").toString().toIntOrNull() ?: 60
 
 }

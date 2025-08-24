@@ -20,7 +20,7 @@ abstract class RunManager(protected val run: Run) {
         checkpointTracker = CheckpointTracker(run.checkpoints, listOf(run.player), run.canSkipCPs, {_, cp -> onCheckpoint(cp)}, { onFinished() })
         checkpointTracker!!.resetToCheckpoint(run.player)
 
-        boostManager = BoostManager(run.player.uniqueId) { 10 }
+        boostManager = BoostManager(run.player.uniqueId) { getBoostCooldown() }
 
         applyLayout()
 
@@ -103,4 +103,5 @@ abstract class RunManager(protected val run: Run) {
     abstract fun onCheckpoint(checkpoint: Int)
     abstract fun onFinished()
     abstract fun resetRun()
+    abstract fun getBoostCooldown(): Int
 }

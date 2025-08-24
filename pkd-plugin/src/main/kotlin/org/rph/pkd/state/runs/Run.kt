@@ -3,10 +3,10 @@ package org.rph.pkd.state.runs
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
+import org.rph.pkd.PKDPlugin
 
 data class Run(
-    val plugin: JavaPlugin,
+    val plugin: PKDPlugin,
     val player: Player,
     val rooms: List<String>,
     val roomPositions: List<Triple<Int, Int, Int>>, // bottom right corner's z and y position + death plane Y

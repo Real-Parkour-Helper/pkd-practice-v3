@@ -30,3 +30,6 @@ commands:
   custom:
     description: Start the room selection process for a custom run.
     usage: /custom
+  config:
+    description: Get or set a config value
+    usage: /config <key> [value]

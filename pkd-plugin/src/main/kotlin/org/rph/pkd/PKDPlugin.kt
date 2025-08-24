@@ -40,8 +40,19 @@ class PKDPlugin : JavaPlugin(), Listener {
     private var listeningForCustomRooms = false
     private var customRooms = mutableListOf<String>()
 
+    fun getConfigField(key: String): Any? {
+        return config.get(key)
+    }
+
+    fun setConfigField(key: String, value: Any) {
+        config.set(key, value)
+        saveConfig()
+    }
+
     override fun onEnable() {
         println("PKDPlugin is enabled!")
+
+        saveDefaultConfig()
 
         try {
             val root = org.apache.logging.log4j.LogManager.getRootLogger()
@@ -89,6 +100,7 @@ class PKDPlugin : JavaPlugin(), Listener {
         getCommand("lobby").executor = LobbyCommand(this)
         getCommand("run").executor = RunCommand(this)
         getCommand("custom").executor = CustomCommand(this)
+        getCommand("config").executor = ConfigCommand(this)
     }
 
     override fun onDisable() {
