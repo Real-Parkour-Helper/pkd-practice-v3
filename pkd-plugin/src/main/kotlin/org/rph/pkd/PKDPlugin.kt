@@ -10,6 +10,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
+import org.bukkit.event.player.AsyncPlayerChatEvent
+import org.bukkit.event.player.PlayerCommandPreprocessEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.java.JavaPlugin
@@ -25,6 +27,7 @@ import org.rph.pkd.skulls.nextTexture
 import org.rph.pkd.skulls.prevTexture
 import org.rph.pkd.skulls.restartTexture
 import org.rph.pkd.state.StateManager
+import org.rph.pkd.state.runs.RoomRunManager
 import org.rph.pkd.utils.extensions.upperCaseWords
 import org.rph.pkd.worlds.RoomsWorld
 import java.util.*
@@ -33,6 +36,9 @@ class PKDPlugin : JavaPlugin(), Listener {
 
     private val stateManagers = mutableMapOf<UUID, StateManager>()
     private lateinit var spiGUI: SpiGUI
+
+    private var listeningForCustomRooms = false
+    private var customRooms = mutableListOf<String>()
 
     override fun onEnable() {
         println("PKDPlugin is enabled!")
@@ -82,6 +88,7 @@ class PKDPlugin : JavaPlugin(), Listener {
         getCommand("next").executor = NextCommand(this)
         getCommand("lobby").executor = LobbyCommand(this)
         getCommand("run").executor = RunCommand(this)
+        getCommand("custom").executor = CustomCommand(this)
     }
 
     override fun onDisable() {
@@ -118,6 +125,91 @@ class PKDPlugin : JavaPlugin(), Listener {
         if (event.entity is Player) {
             event.isCancelled = true
         }
+    }
+
+    @EventHandler
+    fun onPlayerChat(event: AsyncPlayerChatEvent) {
+        if (listeningForCustomRooms) {
+            event.isCancelled = true
+            val message = event.message.trim()
+            // Split the message by spaces, allow multiple rooms at once
+            val rooms = message.split(" ").map { it.lowercase() }
+            for (room in rooms) {
+                val res = PkdData.find(room)
+                if (res.size > 1) {
+                    val str = res.joinToString("${ChatColor.RED}, ") { "${ChatColor.GRAY}$it" }
+                    event.player.sendMessage("${ChatColor.RED}Multiple rooms matching '${ChatColor.GRAY}$room${ChatColor.RED}' found: $str")
+                } else if (res.size == 1) {
+                    customRooms.add(res[0])
+                    event.player.sendMessage("${ChatColor.GREEN}Added room '${ChatColor.GRAY}${res[0]}${ChatColor.GREEN}'.")
+                } else {
+                    event.player.sendMessage("${ChatColor.RED}Room '${ChatColor.GRAY}$room${ChatColor.RED}' not found.")
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    fun onPlayerPreCommand(event: PlayerCommandPreprocessEvent) {
+        if (listeningForCustomRooms) {
+            event.isCancelled = true
+            val command = event.message.trim()
+
+            if (command.equals("/done", true)) {
+                listeningForCustomRooms = false
+                if (customRooms.isEmpty()) {
+                    event.player.sendMessage("${ChatColor.RED}You didn't select any rooms!")
+                } else {
+                    val hasPregame = customRooms.any { "pregame" in it }
+                    val hasStartRoom = customRooms.any { "start" in it }
+                    val hasEndRoom = customRooms.any { "end" in it }
+
+                    val allRooms = PkdData.rooms()
+                    val pregameRooms = allRooms.filter { "pregame" in it }
+                    val startRooms = allRooms.filter { "start" in it }
+                    val endRooms = allRooms.filter { "end" in it }
+
+                    val mapDist = customRooms
+                        .map { it.substringBefore("_") }
+                        .groupingBy { it }
+                        .eachCount()
+
+                    val map = mapDist.maxByOrNull { it.value }?.key ?: "castle"
+
+                    if (!hasStartRoom) {
+                        val fittingStartRoom = startRooms.firstOrNull { map in it } ?: startRooms.random()
+                        customRooms.add(0, fittingStartRoom)
+                    }
+
+                    if (!hasPregame) {
+                        val fittingPregameRoom = pregameRooms.firstOrNull { map in it } ?: pregameRooms.random()
+                        customRooms.add(0, fittingPregameRoom)
+                    }
+
+                    if (!hasEndRoom) {
+                        val fittingEndRoom = endRooms.firstOrNull { map in it } ?: endRooms.random()
+                        customRooms.add(fittingEndRoom)
+                    }
+
+                    val copyList = mutableListOf<String>()
+                    copyList.addAll(customRooms)
+                    getStateManager(event.player)?.tpToRun(copyList)
+
+                    customRooms.clear()
+                }
+            } else if (command.equals("/cancel", true)) {
+                listeningForCustomRooms = false
+                event.player.sendMessage("${ChatColor.RED}Cancelled room selection.")
+                customRooms.clear()
+            } else {
+                event.player.sendMessage("${ChatColor.RED}You are currently selecting rooms. Use /done to start or /cancel to finish.")
+            }
+        }
+    }
+
+    fun startListeningForCustomRooms(player: Player) {
+        player.sendMessage("${ChatColor.GREEN}Listening for custom rooms...")
+        listeningForCustomRooms = true
     }
 
     private fun registerLayouts() {
@@ -298,6 +390,36 @@ class PKDPlugin : JavaPlugin(), Listener {
 
                     onClick = { player ->
                         getStateManager(player)?.getRunManager()?.resetToCheckpoint()
+                    }
+                }
+            }
+            slot(6) {
+                state(0) {
+                    item = ItemBuilder(Material.WOOL)
+                        .name("${ChatColor.RED}Show Barriers")
+                        .lore("${ChatColor.GRAY}Make the barriers in this room visible.")
+                        .durability(14)
+                        .build()
+
+                    onClick = { player ->
+                        try {
+                            (getStateManager(player)?.getRunManager() as RoomRunManager?)?.toggleBarriers()
+                            setState(1)
+                        } finally {}
+                    }
+                }
+                state(1) {
+                    item = ItemBuilder(Material.WOOL)
+                        .name("${ChatColor.GREEN}Hide Barriers")
+                        .lore("${ChatColor.GRAY}Make the barriers in this room invisible.")
+                        .durability(5)
+                        .build()
+
+                    onClick = { player ->
+                        try {
+                            (getStateManager(player)?.getRunManager() as RoomRunManager?)?.toggleBarriers()
+                            setState(0)
+                        } finally {}
                     }
                 }
             }

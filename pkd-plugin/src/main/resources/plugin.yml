@@ -27,3 +27,6 @@ commands:
     description: Start a custom run.
     usage: /run <map> [# of rooms]
     aliased: [ play ]
+  custom:
+    description: Start the room selection process for a custom run.
+    usage: /custom

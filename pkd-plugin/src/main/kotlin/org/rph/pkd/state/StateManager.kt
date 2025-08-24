@@ -11,7 +11,6 @@ import org.rph.pkd.state.runs.Run
 import org.rph.pkd.state.runs.RunManager
 import org.rph.pkd.worlds.RoomsWorld
 import org.rph.pkd.worlds.RunWorld
-import java.io.File
 
 class StateManager(
     private val plugin: JavaPlugin,
@@ -65,6 +64,7 @@ class StateManager(
             val run = Run(
                 plugin = plugin,
                 player = player,
+                world = world,
                 rooms = listOf(roomName),
                 roomPositions = listOf(Triple(corner.z.toInt(), corner.y.toInt(), asset.meta!!.deathPlane ?: 2)),
                 checkpoints = cp
