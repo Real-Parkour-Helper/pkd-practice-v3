@@ -15,3 +15,8 @@ pkd-plugin/build/
 # Velocity
 proxy/*
 !proxy/velocity.toml
+
+dist/
+build-release.bat
+release-setup.bat
+start.bat
