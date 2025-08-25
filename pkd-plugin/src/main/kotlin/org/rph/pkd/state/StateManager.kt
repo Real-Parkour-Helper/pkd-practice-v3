@@ -113,7 +113,8 @@ class StateManager(
                 world = run.world,
                 checkpoints = run.checkpoints,
                 doorPositions = run.doors,
-                dropDoorsAt = run.dropDoorsAt
+                dropDoorsAt = run.dropDoorsAt,
+                timerDelay = 20L
             )
 
             currentRunManager = FullRunManager(runDataClass)
