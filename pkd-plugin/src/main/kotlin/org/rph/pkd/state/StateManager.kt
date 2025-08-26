@@ -25,6 +25,8 @@ class StateManager(
     private var currentRunManager: RunManager? = null
     private var currentRunWorld: World? = null
 
+    fun getCurrentMode() = currentMode
+
     fun tpToLobby(callCleanup: Boolean = true) {
         if (currentMode == Mode.LOBBY) return
         onMainThread {

@@ -124,6 +124,7 @@ class PKDPlugin : JavaPlugin(), Listener {
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
         val player = event.player
+        stateManagers[player.uniqueId]?.ensureOldStateCleanup()
         stateManagers.remove(player.uniqueId)
         event.quitMessage = ""
     }
@@ -132,6 +133,10 @@ class PKDPlugin : JavaPlugin(), Listener {
     fun onFallDamage(event: EntityDamageEvent) {
         if (event.cause == EntityDamageEvent.DamageCause.FALL) {
             event.isCancelled = true
+        } else if (event.cause == EntityDamageEvent.DamageCause.VOID && event.entity is Player) {
+            event.isCancelled = true
+            val runManager = stateManagers[(event.entity as Player).uniqueId]?.getRunManager() ?: return
+            runManager.resetToCheckpoint()
         }
     }
 
