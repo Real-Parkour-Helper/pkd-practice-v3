@@ -64,7 +64,14 @@ object RoomsWorld {
         val roomCorner = roomLocations[roomName] ?: return null
         val asset = PkdData.get(roomName) ?: return null
         val frontDoor = asset.meta!!.frontDoor
-        return Location(getWorld(), roomCorner.x + frontDoor.x + 3, roomCorner.y + frontDoor.y + 1, roomCorner.z + frontDoor.z + 2, 0f, 0f)
+        return Location(
+            getWorld(),
+            roomCorner.x + frontDoor.x + 3,
+            roomCorner.y + frontDoor.y + 1,
+            roomCorner.z + frontDoor.z + 2,
+            0f,
+            0f
+        )
     }
 
     fun getRoomCorner(roomName: String): Location? {
@@ -151,8 +158,18 @@ object RoomsWorld {
 
                 val checkpoints = asset.meta!!.checkpoints
                 for ((idx, checkpoint) in checkpoints.withIndex()) {
-                    val loc1 = Location(w, roomCorner.x + checkpoint.x + 0.5, roomCorner.y + checkpoint.y + 0.5, roomCorner.z + checkpoint.z + 0.5)
-                    val loc2 = Location(w, roomCorner.x + checkpoint.x + 0.5, roomCorner.y + checkpoint.y + 0.2, roomCorner.z + checkpoint.z + 0.5)
+                    val loc1 = Location(
+                        w,
+                        roomCorner.x + checkpoint.x + 0.5,
+                        roomCorner.y + checkpoint.y + 0.5,
+                        roomCorner.z + checkpoint.z + 0.5
+                    )
+                    val loc2 = Location(
+                        w,
+                        roomCorner.x + checkpoint.x + 0.5,
+                        roomCorner.y + checkpoint.y + 0.2,
+                        roomCorner.z + checkpoint.z + 0.5
+                    )
                     armorstandSpawns.add(Pair(loc1, "§a§lCHECKPOINT"))
                     armorstandSpawns.add(Pair(loc2, "§e§l#${idx + 1}"))
                 }
@@ -162,6 +179,38 @@ object RoomsWorld {
                     Location(w, roomX, floorY.toDouble(), rowZ),
                     ignoreAir = true
                 )
+
+                if (asset.meta!!.frontDoor != null) {
+                    val pasteLocation = Location(
+                        w,
+                        roomCorner.x + asset.meta!!.frontDoor.x + 1,
+                        roomCorner.y + asset.meta!!.frontDoor.y + 1,
+                        roomCorner.z + asset.meta!!.frontDoor.z
+                    )
+                    val door = PkdData.doors(asset.map).firstOrNull { it.front }
+                    if (door != null) {
+                        pasteJobs += Schematics.PasteJob(
+                            door.schem.toFile(),
+                            pasteLocation
+                        )
+                    }
+                }
+
+                if (asset.meta!!.backDoor != null) {
+                    val pasteLocation = Location(
+                        w,
+                        roomCorner.x + asset.meta!!.backDoor.x + 1,
+                        roomCorner.y + asset.meta!!.backDoor.y + 1,
+                        roomCorner.z + asset.meta!!.backDoor.z
+                    )
+                    val door = PkdData.doors(asset.map).firstOrNull { !it.front }
+                    if (door != null) {
+                        pasteJobs += Schematics.PasteJob(
+                            door.schem.toFile(),
+                            pasteLocation
+                        )
+                    }
+                }
 
                 roomX += asset.meta!!.width
                 maxLength = maxOf(maxLength, asset.meta!!.length)
