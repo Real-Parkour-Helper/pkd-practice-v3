@@ -1,6 +1,7 @@
 package org.rph.pkd.state.runs
 
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
 import org.bukkit.Location
 import org.bukkit.Material
 import org.rph.core.inventory.hotbar.HotbarAPI
@@ -18,6 +19,7 @@ class RoomRunManager(run: Run) : RunManager(run) {
                     run.player.sendBlockChange(loc, Material.BARRIER, 0.toByte())
                 }
                 shownBarriers.clear()
+                run.player.sendMessage("${ChatColor.DARK_GREEN}Barriers hidden.")
             }, 1L)
         } else {
             val radius = 50
@@ -34,6 +36,7 @@ class RoomRunManager(run: Run) : RunManager(run) {
                     }
                 }
             }
+            run.player.sendMessage("${ChatColor.GREEN}Barriers shown.")
         }
     }
 

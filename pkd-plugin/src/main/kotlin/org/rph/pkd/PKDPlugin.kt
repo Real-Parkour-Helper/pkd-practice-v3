@@ -411,29 +411,14 @@ class PKDPlugin : JavaPlugin(), Listener {
             slot(6) {
                 state(0) {
                     item = ItemBuilder(Material.WOOL)
-                        .name("${ChatColor.RED}Show Barriers")
-                        .lore("${ChatColor.GRAY}Make the barriers in this room visible.")
+                        .name("${ChatColor.RED}Toggle Barriers")
+                        .lore("${ChatColor.GRAY}Hide / show the barriers around you.")
                         .durability(14)
                         .build()
 
                     onClick = { player ->
                         try {
                             (getStateManager(player)?.getRunManager() as RoomRunManager?)?.toggleBarriers()
-                            setState(1)
-                        } finally {}
-                    }
-                }
-                state(1) {
-                    item = ItemBuilder(Material.WOOL)
-                        .name("${ChatColor.GREEN}Hide Barriers")
-                        .lore("${ChatColor.GRAY}Make the barriers in this room invisible.")
-                        .durability(5)
-                        .build()
-
-                    onClick = { player ->
-                        try {
-                            (getStateManager(player)?.getRunManager() as RoomRunManager?)?.toggleBarriers()
-                            setState(0)
                         } finally {}
                     }
                 }
