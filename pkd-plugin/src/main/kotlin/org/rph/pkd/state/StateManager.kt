@@ -2,6 +2,8 @@ package org.rph.pkd.state
 
 import org.bukkit.*
 import org.bukkit.entity.Player
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import org.rph.core.data.PkdData
 import org.rph.core.inventory.hotbar.HotbarAPI
 import org.rph.pkd.PKDPlugin
@@ -191,6 +193,7 @@ class StateManager(
 
     private fun ensureBasics(world: World) {
         player.gameMode = GameMode.ADVENTURE
+        player.addPotionEffect(PotionEffect(PotionEffectType.NIGHT_VISION, Int.MAX_VALUE, 0))
         player.exp = 0F
         player.level = 0
 
