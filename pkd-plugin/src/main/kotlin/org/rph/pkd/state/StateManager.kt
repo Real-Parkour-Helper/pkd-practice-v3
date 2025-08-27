@@ -104,6 +104,7 @@ class StateManager(
     fun tpToRun(rooms: List<String>) {
         ensureOldStateCleanup()
 
+        player.sendMessage("${ChatColor.GREEN}Generating run world, please wait...")
         RunWorld.createRunWorld(plugin, rooms) { run ->
             ensureBasics(run.world)
             currentRunWorld = run.world

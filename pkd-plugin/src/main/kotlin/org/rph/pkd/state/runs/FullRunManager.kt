@@ -8,6 +8,7 @@ import org.bukkit.scheduler.BukkitTask
 import org.github.paperspigot.Title
 import org.rph.core.inventory.hotbar.HotbarAPI
 import org.rph.core.sound.PkdSounds
+import org.rph.pkd.utils.PregameCountdown
 
 class FullRunManager(run: Run) : RunManager(run) {
 
@@ -17,8 +18,7 @@ class FullRunManager(run: Run) : RunManager(run) {
     private var originalDropDoorsAt: MutableList<Int> = mutableListOf()
 
     override fun start() {
-        var countdown = run.plugin.getConfigField("pregameCountdown").toString().toIntOrNull() ?: 15
-
+        val countdown = run.plugin.getConfigField("pregameCountdown").toString().toIntOrNull() ?: 15
         val preGameSpawn = run.checkpoints[0]
         run.player.teleport(preGameSpawn)
         run.checkpoints.removeAt(0)
@@ -28,35 +28,9 @@ class FullRunManager(run: Run) : RunManager(run) {
 
         HotbarAPI.applyLayout(run.player, "preRunLayout")
 
-        countdownTask = object : BukkitRunnable() {
-            override fun run() {
-                if (countdown > 0) {
-                    val chatColor = when (countdown) {
-                        in 11..15 -> "§b" // Cyan for 11-15 seconds
-                        in 6..10 -> "§6" // Gold for 6-10 seconds
-                        in 1..5 -> "§c" // Red for 1-5 seconds
-                        else -> "§e" // Yellow for everything else seconds
-                    }
-                    run.player.sendMessage("§eThe game starts in ${chatColor}${countdown}§e seconds!")
-
-                    if (countdown == 10 || countdown in 1..5) {
-                        val titleColor = when (countdown) {
-                            10 -> "§a" // Green for 10 seconds
-                            in 4..5 -> "§e" // Yellow for 4-5 seconds
-                            in 1..3 -> "§c" // Red for 1-3 seconds
-                            else -> "" // This doesn't happen
-                        }
-                        run.player.sendTitle(Title("${titleColor}${countdown}", "", 0, 20, 0))
-                        PkdSounds.playTimerCountdownSound(run.player)
-                    }
-
-                    countdown--
-                } else {
-                    cancel()
-                    startInternal()
-                }
-            }
-        }.runTaskTimer(run.plugin, 0L, 20L)
+        countdownTask = PregameCountdown(run.plugin, run.player, countdown) {
+            startInternal()
+        }.runTaskTimer(run.plugin, 0L, 1L)
     }
 
     override fun stop() {
