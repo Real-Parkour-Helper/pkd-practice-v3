@@ -44,9 +44,9 @@ abstract class RunManager(protected val run: Run) {
 
         PkdSounds.playResetSound(run.player)
 
-        if (checkpointTracker!!.getCheckpoint(run.player) == 0) {
-            resetRun()
-        }
+//        if (checkpointTracker!!.getCheckpoint(run.player) == 0) {
+//            resetRun()
+//        }
 
         checkpointTracker!!.resetToCheckpoint(run.player)
     }
