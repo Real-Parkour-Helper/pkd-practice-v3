@@ -5,9 +5,11 @@ import com.samjakob.spigui.buttons.SGButton
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Material
+import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityChangeBlockEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.AsyncPlayerChatEvent
@@ -224,6 +226,13 @@ class PKDPlugin : JavaPlugin(), Listener {
             } else {
                 event.player.sendMessage("${ChatColor.RED}You are currently selecting rooms. Use /done to start or /cancel to finish.")
             }
+        }
+    }
+
+    @EventHandler
+    fun onEntityChangeBlock(event: EntityChangeBlockEvent) {
+        if (event.entity is FallingBlock) {
+            event.isCancelled = true
         }
     }
 

@@ -3,9 +3,7 @@ package org.rph.pkd.state.runs
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
-import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
-import org.github.paperspigot.Title
 import org.rph.core.inventory.hotbar.HotbarAPI
 import org.rph.core.sound.PkdSounds
 import org.rph.pkd.utils.PregameCountdown
@@ -134,6 +132,15 @@ class FullRunManager(run: Run) : RunManager(run) {
                 val block = run.world.getBlockAt(x, y, z)
                 block.type = Material.AIR
             }
+        }
+
+
+        tempBlocks.forEach { block ->
+            val entity = run.world.spawnFallingBlock(
+                Location(run.world, block.x.toDouble(), block.y.toDouble(), block.z.toDouble()),
+                block.id, block.data
+            )
+            entity.dropItem = false
         }
 
         resetDoorBlocks.add(tempBlocks)
