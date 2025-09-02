@@ -71,5 +71,5 @@ class RoomRunManager(run: Run) : RunManager(run) {
     }
 
     override fun getBoostCooldown(): Int = 0
-
+    override fun tickPrecision(): Int = if (run.plugin.getConfigField("ilPreciseTicks").toString().toBoolean()) 1 else 2
 }

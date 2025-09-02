@@ -1,3 +1,5 @@
 boostCooldown: 60
 pregameCountdown: 15
 slimeLagback: true
+ilPreciseTicks: false
+runPreciseTicks: false

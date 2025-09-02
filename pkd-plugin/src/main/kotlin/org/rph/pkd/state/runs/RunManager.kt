@@ -17,7 +17,7 @@ abstract class RunManager(protected val run: Run) {
     private var tickTimerDelayTicks = 0
 
     protected fun startInternal() {
-        checkpointTracker = CheckpointTracker(run.checkpoints, listOf(run.player), run.canSkipCPs, {_, cp -> onCheckpoint(cp)}, { onFinished() })
+        checkpointTracker = CheckpointTracker(run.plugin, run.checkpoints, listOf(run.player), run.canSkipCPs, {_, cp -> onCheckpoint(cp)}, { onFinished() }, tickPrecision())
         checkpointTracker!!.resetToCheckpoint(run.player)
 
         boostManager = BoostManager(run.player.uniqueId) { getBoostCooldown() }
@@ -104,4 +104,5 @@ abstract class RunManager(protected val run: Run) {
     abstract fun onFinished()
     abstract fun resetRun()
     abstract fun getBoostCooldown(): Int
+    abstract fun tickPrecision(): Int
 }

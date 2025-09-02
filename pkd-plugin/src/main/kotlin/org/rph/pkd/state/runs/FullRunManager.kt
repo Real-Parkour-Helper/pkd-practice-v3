@@ -147,5 +147,5 @@ class FullRunManager(run: Run) : RunManager(run) {
     }
 
     override fun getBoostCooldown(): Int = run.plugin.getConfigField("boostCooldown").toString().toIntOrNull() ?: 60
-
+    override fun tickPrecision(): Int = if (run.plugin.getConfigField("runPreciseTicks").toString().toBoolean()) 1 else 2
 }
