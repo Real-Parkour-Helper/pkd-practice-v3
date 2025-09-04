@@ -1,4 +1,5 @@
 boostCooldown: 60
+ping: 0
 pregameCountdown: 15
 slimeLagback: true
 ilPreciseTicks: false

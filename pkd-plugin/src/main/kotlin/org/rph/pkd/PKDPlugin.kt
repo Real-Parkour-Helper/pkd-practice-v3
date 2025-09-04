@@ -30,6 +30,7 @@ import org.rph.pkd.skulls.prevTexture
 import org.rph.pkd.skulls.restartTexture
 import org.rph.pkd.state.StateManager
 import org.rph.pkd.state.runs.RoomRunManager
+import org.rph.pkd.utils.PingSimulator
 import org.rph.pkd.utils.SlimeLagback
 import org.rph.pkd.utils.extensions.upperCaseWords
 import org.rph.pkd.worlds.RoomsWorld
@@ -42,6 +43,8 @@ class PKDPlugin : JavaPlugin(), Listener {
 
     private var listeningForCustomRooms = false
     private var customRooms = mutableListOf<String>()
+
+    private var pingSimulator = PingSimulator(this)
 
     fun getConfigField(key: String): Any? {
         return config.get(key)
@@ -372,19 +375,21 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
-                            onSuccess = {
-                                setState(1)
-                            },
-                            onCooldownEnd = {
-                                player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
-                                PkdSounds.playBoostReadySound(player)
-                                setState(0)
-                            },
-                            onFail = { secondsLeft ->
-                                player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
-                            }
-                        )
+                        pingSimulator.runWithPing {
+                            getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
+                                onSuccess = {
+                                    setState(1)
+                                },
+                                onCooldownEnd = {
+                                    player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
+                                    PkdSounds.playBoostReadySound(player)
+                                    setState(0)
+                                },
+                                onFail = { secondsLeft ->
+                                    player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
+                                }
+                            )
+                        }
                     }
                 }
                 state(1) {
@@ -397,19 +402,21 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
-                            onSuccess = {
-                                setState(1)
-                            },
-                            onCooldownEnd = {
-                                player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
-                                PkdSounds.playBoostReadySound(player)
-                                setState(0)
-                            },
-                            onFail = { secondsLeft ->
-                                player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
-                            }
-                        )
+                        pingSimulator.runWithPing {
+                            getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
+                                onSuccess = {
+                                    setState(1)
+                                },
+                                onCooldownEnd = {
+                                    player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
+                                    PkdSounds.playBoostReadySound(player)
+                                    setState(0)
+                                },
+                                onFail = { secondsLeft ->
+                                    player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -544,19 +551,21 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
-                            onSuccess = {
-                                setState(1)
-                            },
-                            onCooldownEnd = {
-                                player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
-                                PkdSounds.playBoostReadySound(player)
-                                setState(0)
-                            },
-                            onFail = { secondsLeft ->
-                                player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
-                            }
-                        )
+                        pingSimulator.runWithPing {
+                            getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
+                                onSuccess = {
+                                    setState(1)
+                                },
+                                onCooldownEnd = {
+                                    player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
+                                    PkdSounds.playBoostReadySound(player)
+                                    setState(0)
+                                },
+                                onFail = { secondsLeft ->
+                                    player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
+                                }
+                            )
+                        }
                     }
                 }
                 state(1) {
@@ -569,19 +578,21 @@ class PKDPlugin : JavaPlugin(), Listener {
                         .build()
 
                     onClick = { player ->
-                        getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
-                            onSuccess = {
-                                setState(1)
-                            },
-                            onCooldownEnd = {
-                                player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
-                                PkdSounds.playBoostReadySound(player)
-                                setState(0)
-                            },
-                            onFail = { secondsLeft ->
-                                player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
-                            }
-                        )
+                        pingSimulator.runWithPing {
+                            getStateManager(player)?.getRunManager()?.currentBoostManager()?.tryBoost(
+                                onSuccess = {
+                                    setState(1)
+                                },
+                                onCooldownEnd = {
+                                    player.sendMessage("${ChatColor.GREEN}Your Parkour Booster is now ready!")
+                                    PkdSounds.playBoostReadySound(player)
+                                    setState(0)
+                                },
+                                onFail = { secondsLeft ->
+                                    player.sendMessage("${ChatColor.RED}You can use this again in $secondsLeft second${if (secondsLeft != 1) "s" else ""}!")
+                                }
+                            )
+                        }
                     }
                 }
             }
