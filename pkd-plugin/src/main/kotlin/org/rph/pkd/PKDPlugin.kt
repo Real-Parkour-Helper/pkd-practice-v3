@@ -57,6 +57,9 @@ class PKDPlugin : JavaPlugin(), Listener {
 
         saveDefaultConfig()
 
+        config.options().copyDefaults(true)
+        saveConfig()
+
         try {
             val root = org.apache.logging.log4j.LogManager.getRootLogger()
                     as org.apache.logging.log4j.core.Logger

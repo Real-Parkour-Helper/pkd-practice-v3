@@ -17,7 +17,7 @@ abstract class RunManager(protected val run: Run) {
     private var tickTimerDelayTicks = 0
 
     protected fun startInternal() {
-        checkpointTracker = CheckpointTracker(run.plugin, run.checkpoints, listOf(run.player), run.canSkipCPs, {_, cp -> onCheckpoint(cp)}, { onFinished() }, tickPrecision())
+        checkpointTracker = CheckpointTracker(run.checkpoints, listOf(run.player), run.canSkipCPs, {_, cp -> onCheckpoint(cp)}, { onFinished() }, tickPrecision())
         checkpointTracker!!.resetToCheckpoint(run.player)
 
         boostManager = BoostManager(run.player.uniqueId) { getBoostCooldown() }
@@ -44,9 +44,10 @@ abstract class RunManager(protected val run: Run) {
 
         PkdSounds.playResetSound(run.player)
 
-//        if (checkpointTracker!!.getCheckpoint(run.player) == 0) {
-//            resetRun()
-//        }
+        val reset = run.plugin.getConfigField("resetTimeOnFailCP0").toString().toBooleanStrictOrNull() ?: false
+        if (reset && checkpointTracker!!.getCheckpoint(run.player) == 0) {
+            resetRun()
+        }
 
         checkpointTracker!!.resetToCheckpoint(run.player)
     }
