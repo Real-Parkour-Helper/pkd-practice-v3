@@ -13,23 +13,23 @@ repositories {
     maven(url = "https://maven.enginehub.org/repo/")
 
     maven { url = uri("https://jitpack.io") }
-
-    maven {
-        name = "papermc"
-        url = uri("https://repo.papermc.io/repository/maven-public/")
-    }
+    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
 }
 
 dependencies {
     testImplementation(kotlin("test"))
 
-    compileOnly("org.github.paperspigot:paperspigot-api:1.8.8-R0.1-20160806.221350-1")
+    //compileOnly("org.github.paperspigot:paperspigot-api:1.8.8-R0.1-20160806.221350-1")
+    compileOnly("org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT")
+
     compileOnly("net.dmulloy2:ProtocolLib:5.1.0")
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:6.1") {
         exclude(group = "org.bukkit", module = "bukkit")
     }
 
-    implementation("org.rph:pkd-core-v2:1.8.0")
+    compileOnly(files("libs/patched_1.8.8.jar"))
+
+    implementation("org.rph:pkd-core-v2:1.9.0")
     implementation("com.samjakob:SpiGUI:v1.4.1")
 
     compileOnly("org.apache.logging.log4j:log4j-api:2.12.1")
