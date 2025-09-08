@@ -11,6 +11,7 @@ server/world_lobby/*
 pkd-plugin/.gradle
 pkd-plugin/.kotlin
 pkd-plugin/build/
+pkd-plugin/libs
 
 # Velocity
 proxy/*
